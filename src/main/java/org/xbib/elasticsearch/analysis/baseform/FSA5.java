@@ -1,0 +1,320 @@
+package org.xbib.elasticsearch.analysis.baseform;
+
+import java.util.Collections;
+import java.util.Set;
+
+/**
+ * FSA binary format implementation for version 5.
+ * <p/>
+ * <p/>
+ * Version 5 indicates the dictionary was built with these flags:
+ * {@link FSAFlags#FLEXIBLE}, {@link FSAFlags#STOPBIT} and
+ * {@link FSAFlags#NEXTBIT}. The internal representation of the FSA must
+ * therefore follow this description (please note this format describes only a
+ * single transition (arc), not the entire dictionary file).
+ * <p/>
+ * <pre>
+ * ---- this node header present only if automaton was compiled with NUMBERS option.
+ * Byte
+ *        +-+-+-+-+-+-+-+-+\
+ *      0 | | | | | | | | | \  LSB
+ *        +-+-+-+-+-+-+-+-+  +
+ *      1 | | | | | | | | |  |      number of strings recognized
+ *        +-+-+-+-+-+-+-+-+  +----- by the automaton starting
+ *        : : : : : : : : :  |      from this node.
+ *        +-+-+-+-+-+-+-+-+  +
+ *  ctl-1 | | | | | | | | | /  MSB
+ *        +-+-+-+-+-+-+-+-+/
+ *
+ * ---- remaining part of the node
+ *
+ * Byte
+ *       +-+-+-+-+-+-+-+-+\
+ *     0 | | | | | | | | | +------ label
+ *       +-+-+-+-+-+-+-+-+/
+ *
+ *                  +------------- node pointed to is next
+ *                  | +----------- the last arc of the node
+ *                  | | +--------- the arc is final
+ *                  | | |
+ *             +-----------+
+ *             |    | | |  |
+ *         ___+___  | | |  |
+ *        /       \ | | |  |
+ *       MSB           LSB |
+ *        7 6 5 4 3 2 1 0  |
+ *       +-+-+-+-+-+-+-+-+ |
+ *     1 | | | | | | | | | \ \
+ *       +-+-+-+-+-+-+-+-+  \ \  LSB
+ *       +-+-+-+-+-+-+-+-+     +
+ *     2 | | | | | | | | |     |
+ *       +-+-+-+-+-+-+-+-+     |
+ *     3 | | | | | | | | |     +----- target node address (in bytes)
+ *       +-+-+-+-+-+-+-+-+     |      (not present except for the byte
+ *       : : : : : : : : :     |       with flags if the node pointed to
+ *       +-+-+-+-+-+-+-+-+     +       is next)
+ *   gtl | | | | | | | | |    /  MSB
+ *       +-+-+-+-+-+-+-+-+   /
+ * gtl+1                           (gtl = gotoLength)
+ * </pre>
+ */
+public final class FSA5 extends FSA {
+    /**
+     * Default filler byte.
+     */
+    public final static byte DEFAULT_FILLER = '_';
+
+    /**
+     * Default annotation byte.
+     */
+    public final static byte DEFAULT_ANNOTATION = '+';
+
+    /**
+     * Automaton version as in the file header.
+     */
+    public static final byte VERSION = 5;
+
+    /**
+     * Bit indicating that an arc corresponds to the last character of a
+     * sequence available when building the automaton.
+     */
+    public static final int BIT_FINAL_ARC = 1;
+
+    /**
+     * Bit indicating that an arc is the last one of the node's list and the
+     * following one belongs to another node.
+     */
+    public static final int BIT_LAST_ARC = 1 << 1;
+
+    /**
+     * Bit indicating that the target node of this arc follows it in the
+     * compressed automaton structure (no goto field).
+     */
+    public static final int BIT_TARGET_NEXT = 1 << 2;
+
+    /**
+     * An offset in the arc structure, where the address and flags field begins.
+     * In version 5 of FSA automata, this value is constant (1, skip label).
+     */
+    public final static int ADDRESS_OFFSET = 1;
+
+    /**
+     * An array of bytes with the internal representation of the automaton.
+     * Please see the documentation of this class for more information on how
+     * this structure is organized.
+     */
+    public byte[] arcs;
+
+    /**
+     * The length of the node header structure (if the automaton was compiled with
+     * <code>NUMBERS</code> option). Otherwise zero.
+     */
+    public int nodeDataLength;
+
+    /**
+     * Flags for this automaton version.
+     */
+    private Set<FSAFlags> flags;
+
+    /**
+     * Number of bytes each address takes in full, expanded form (goto length).
+     */
+    public int gtl;
+
+    /**
+     * Filler character.
+     */
+    public byte filler;
+
+    /**
+     * Annotation character.
+     */
+    public byte annotation;
+
+    public FSA5() {
+    }
+
+    public FSA5 setArcs(byte[] arcs) {
+        this.arcs = arcs;
+        return this;
+    }
+
+    public FSA5 setNodeDataLength(int nodeDataLength) {
+        this.nodeDataLength = nodeDataLength;
+        return this;
+    }
+
+    public FSA5 setFlags(Set<FSAFlags> flags) {
+        this.flags = flags;
+        return this;
+    }
+
+    public FSA5 setGotoLength(int gtl) {
+        this.gtl = gtl;
+        return this;
+    }
+
+    public FSA5 setFiller(byte filler) {
+        this.filler = filler;
+        return this;
+    }
+
+    public FSA5 setAnnotation(byte annotation) {
+        this.annotation = annotation;
+        return this;
+    }
+
+    /**
+     * Returns the start node of this automaton.
+     */
+    @Override
+    public int getRootNode() {
+        // Skip dummy node marking terminating state.
+        final int epsilonNode = skipArc(getFirstArc(0));
+        // And follow the epsilon node's first (and only) arc.
+        return getDestinationNodeOffset(getFirstArc(epsilonNode));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final int getFirstArc(int node) {
+        return nodeDataLength + node;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final int getNextArc(int arc) {
+        if (isArcLast(arc)) {
+            return 0;
+        } else {
+            return skipArc(arc);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getArc(int node, byte label) {
+        for (int arc = getFirstArc(node); arc != 0; arc = getNextArc(arc)) {
+            if (getArcLabel(arc) == label) {
+                return arc;
+            }
+        }
+
+        // An arc labeled with "label" not found.
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getEndNode(int arc) {
+        final int nodeOffset = getDestinationNodeOffset(arc);
+        assert nodeOffset != 0 : "No target node for terminal arcs.";
+        return nodeOffset;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public byte getArcLabel(int arc) {
+        return arcs[arc];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isArcFinal(int arc) {
+        return (arcs[arc + ADDRESS_OFFSET] & BIT_FINAL_ARC) != 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isArcTerminal(int arc) {
+        return (0 == getDestinationNodeOffset(arc));
+    }
+
+    /**
+     * Returns the number encoded at the given node. The number equals the count
+     * of the set of suffixes reachable from <code>node</code> (called its right
+     * language).
+     */
+    @Override
+    public int getRightLanguageCount(int node) {
+        assert getFlags().contains(FSAFlags.NUMBERS) : "This FSA was not compiled with NUMBERS.";
+        return decodeFromBytes(arcs, node, nodeDataLength);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * <p>For this automaton version, an additional {@link FSAFlags#NUMBERS} flag
+     * may be set to indicate the automaton contains extra fields for each node.</p>
+     */
+    @Override
+    public Set<FSAFlags> getFlags() {
+        return Collections.unmodifiableSet(flags);
+    }
+
+    /**
+     * Returns <code>true</code> if this arc has <code>LAST</code> bit set.
+     *
+     * @see #BIT_LAST_ARC
+     */
+    public boolean isArcLast(int arc) {
+        return (arcs[arc + ADDRESS_OFFSET] & BIT_LAST_ARC) != 0;
+    }
+
+    /**
+     * @see #BIT_TARGET_NEXT
+     */
+    public boolean isNextSet(int arc) {
+        return (arcs[arc + ADDRESS_OFFSET] & BIT_TARGET_NEXT) != 0;
+    }
+
+    /**
+     * Returns an n-byte integer encoded in byte-packed representation.
+     */
+    static int decodeFromBytes(final byte[] arcs, final int start, final int n) {
+        int r = 0;
+        for (int i = n; --i >= 0; ) {
+            r = r << 8 | (arcs[start + i] & 0xff);
+        }
+        return r;
+    }
+
+    /**
+     * Returns the address of the node pointed to by this arc.
+     */
+    final int getDestinationNodeOffset(int arc) {
+        if (isNextSet(arc)) {
+			/* The destination node follows this arc in the array. */
+            return skipArc(arc);
+        } else {
+			/*
+			 * The destination node address has to be extracted from the arc's
+			 * goto field.
+			 */
+            return decodeFromBytes(arcs, arc + ADDRESS_OFFSET, gtl) >>> 3;
+        }
+    }
+
+    /**
+     * Read the arc's layout and skip as many bytes, as needed.
+     */
+    private int skipArc(int offset) {
+        return offset + (isNextSet(offset)
+                ? 1 + 1 /* label + flags */
+                : 1 + gtl /* label + flags/address */);
+    }
+}
