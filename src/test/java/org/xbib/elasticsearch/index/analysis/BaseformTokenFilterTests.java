@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.instanceOf;
 public class BaseformTokenFilterTests extends Assert {
 
     @Test
-    public void test() throws IOException {
+    public void testOne() throws IOException {
         AnalysisService analysisService = createAnalysisService();
         TokenFilterFactory tokenFilter = analysisService.tokenFilter("baseform");
         assertThat(tokenFilter, instanceOf(BaseformTokenFilterFactory.class));
@@ -70,6 +70,33 @@ public class BaseformTokenFilterTests extends Assert {
         Tokenizer tokenizer = new StandardTokenizer(Version.LUCENE_44, new StringReader(source));
         assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);
 
+    }
+
+    @Test
+    public void testTwo() throws IOException {
+        AnalysisService analysisService = createAnalysisService();
+        TokenFilterFactory tokenFilter = analysisService.tokenFilter("baseform");
+        assertThat(tokenFilter, instanceOf(BaseformTokenFilterFactory.class));
+
+        String source = "Das sind Autos, die Nudeln transportieren.";
+
+        String[] expected = {
+                "Das",
+                "Das",
+                "sind",
+                "sind",
+                "Autos",
+                "Auto",
+                "die",
+                "der",
+                "Nudeln",
+                "Nudel",
+                "transportieren",
+                "transportieren"
+        };
+
+        Tokenizer tokenizer = new StandardTokenizer(Version.LUCENE_44, new StringReader(source));
+        assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);
     }
 
     public AnalysisService createAnalysisService() {

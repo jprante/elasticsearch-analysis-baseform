@@ -62,7 +62,7 @@ public class Dictionary {
                     if (finalStatesIterator.hasNext()) {
                         buf = finalStatesIterator.next();
                         String s = new String(buf.array(), buf.position(), buf.remaining(), UTF8);
-                        return s.equals(result) ? s : lookup(buf, s);
+                        return s.isEmpty() || s.equals(result) ? s : lookup(buf, s);
                     }
                 }
                 break;
