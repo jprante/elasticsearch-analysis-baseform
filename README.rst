@@ -13,12 +13,11 @@ Example: the base form of ``zurückgezogen`` is ``zurückziehen``.
 Installation
 ------------
 
-Current version of the plugin is **1.0.0** (Oct 21, 2013)
-
+Current version of the plugin is **1.0.1** (Oct 22, 2013)
 
 Prerequisites::
 
-  Elasticsearch 0.90.5+
+  Elasticsearch 0.90+
 
 =============  =========  =================  =============================================================
 ES version     Plugin     Release date       Command
@@ -26,9 +25,20 @@ ES version     Plugin     Release date       Command
 0.90.5         **1.0.1**  Oct 22, 2013       ./bin/plugin --install baseform --url http://bit.ly/1gAKXYs
 =============  =========  =================  =============================================================
 
+Do not forget to restart the node after installing.
+
+Project docs
+------------
+
+The Maven project site is available at `Github <http://jprante.github.io/elasticsearch-analysis-baseform>`_
+
+Binaries
+--------
+
+Binaries are available at `Bintray <https://bintray.com/pkg/show/general/jprante/elasticsearch-plugins/elasticsearch-analysis-baseform>`_
 
 Example
--------
+=======
 
 In the mapping, set up a token filter of type "baseform"::
 
