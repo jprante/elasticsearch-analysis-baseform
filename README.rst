@@ -6,9 +6,9 @@ Baseform is an analysis plugin for `Elasticsearch <http://github.com/elasticsear
 
 With the baseform analysis, you can use a token filter for reducing word forms to their base form.
 
-Currently, only baseforms for german are implemented.
+Currently, only baseforms for german and english are implemented.
 
-Example: the base form of ``zurückgezogen`` is ``zurückziehen``.
+Example: the german base form of ``zurückgezogen`` is ``zurückziehen``.
 
 Installation
 ------------
@@ -22,7 +22,8 @@ Prerequisites::
 =============  =========  =================  =============================================================
 ES version     Plugin     Release date       Command
 -------------  ---------  -----------------  -------------------------------------------------------------
-0.90.5         **1.0.1**  Oct 22, 2013       ./bin/plugin --install baseform --url http://bit.ly/1gAKXYs
+0.90.5         1.0.1      Oct 22, 2013       ./bin/plugin --install baseform --url http://bit.ly/1gAKXYs
+0.90.7         **1.1.0**  Nov 15, 2013       ./bin/plugin --install baseform --url http://bit.ly/1aYlh4G
 =============  =========  =================  =============================================================
 
 Do not forget to restart the node after installing.
@@ -37,10 +38,10 @@ Binaries
 
 Binaries are available at `Bintray <https://bintray.com/pkg/show/general/jprante/elasticsearch-plugins/elasticsearch-analysis-baseform>`_
 
-Example
-=======
+Example (german)
+================
 
-In the mapping, set up a token filter of type "baseform"::
+In the settings, set up a token filter of type "baseform" and language "de"::
 
   {
      "index":{
@@ -70,6 +71,52 @@ will be tokenized into
 
 It is recommended to add the `Unique token filter <http://www.elasticsearch.org/guide/reference/index-modules/analysis/unique-tokenfilter.html>`_ to skip tokens that occur more than once.
 
+Example (english)
+=================
+
+In the settings, given this token filter of type "baseform" and language "en" has been set up::
+
+
+    {
+       "index" : {
+          "analysis" : {
+              "filter" : {
+                  "baseform" : {
+                      "type" : "baseform",
+                      "language" : "en"
+                  }
+              },
+              "analyzer" : {
+                  "baseform" : {
+                      "tokenizer" : "standard",
+                      "filter" : [ "baseform", "unique" ]
+                  }
+              }
+          }
+       }
+    }
+
+
+Then, with the text::
+
+    “I have a dream that one day this nation will rise up, and live out the true meaning of its creed: ‘We hold these truths to be self-evident: that all men are created equal.’
+    I have a dream that one day on the red hills of Georgia the sons of former slaves and the sons of former slave owners will be able to sit down together at a table of brotherhood.
+    I have a dream that one day even the state of Mississippi, a state sweltering with the heat of injustice and sweltering with the heat of oppression, will be transformed into an oasis of freedom and justice.
+    I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character.
+    I have a dream today!”
+
+this token stream will be produced::
+
+    "I","have","a","dream","that","one","day","this","nation","will","rise","up","and","live","out",
+    "the","true","meaning","mean","of","its","creed","We","hold","these","truths","truth","to","be",
+    "self","evident","all","men","man","are","created","create","equal","on","red","hills","hill",
+    "Georgia","sons","son","former","slaves","slave","owners","owner","able","sit","down","together",
+    "at","table","brotherhood","even","state","Mississippi","sweltering","swelter","with","heat",
+    "injustice","oppression","transformed","transform","into","an","oasis","freedom","justice","my",
+    "four","little","children","child","in","where","they","not","judged","judge","by","color","their",
+    "skin","but","content","character","today"
+
+As an alternative, separate dictionaries for ``en-verbs`` and ``en-nouns`` are available.
 
 License
 =======
@@ -102,3 +149,7 @@ The german baseform file is a modified version of Daniel Nabers morphology file
 http://www.danielnaber.de/morphologie/morphy-mapping-20110717.latin1.gz
 
 and is distributed under CC-BY-SA http://creativecommons.org/licenses/by-sa/3.0/
+
+The english baseforms are a modified version of the english.dict file
+of http://languagetool.org/download/snapshots/LanguageTool-20131115-snapshot.zip
+which is licensed under LGPL http://www.fsf.org/licensing/licenses/lgpl.html#SEC1

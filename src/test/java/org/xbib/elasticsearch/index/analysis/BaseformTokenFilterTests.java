@@ -101,7 +101,7 @@ public class BaseformTokenFilterTests extends Assert {
 
     public AnalysisService createAnalysisService() {
         Settings settings = ImmutableSettings.settingsBuilder()
-                .loadFromClasspath("org/xbib/elasticsearch/index/analysis/baseform_analysis.json").build();
+                .loadFromClasspath("org/xbib/elasticsearch/index/analysis/baseform_de.json").build();
 
         Index index = new Index("test");
 

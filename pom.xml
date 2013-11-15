@@ -5,7 +5,7 @@
 
     <groupId>org.xbib.elasticsearch.plugin</groupId>
     <artifactId>elasticsearch-analysis-baseform</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 
     <packaging>jar</packaging>
 
@@ -47,7 +47,7 @@
     <properties>
         <github.global.server>github</github.global.server>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <elasticsearch.version>0.90.5</elasticsearch.version>
+        <elasticsearch.version>0.90.7</elasticsearch.version>
     </properties>
 
     <dependencies>
@@ -72,6 +72,7 @@
             <version>6.8.7</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
