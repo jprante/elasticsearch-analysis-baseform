@@ -13,7 +13,7 @@ Example: the german base form of ``zurückgezogen`` is ``zurückziehen``.
 Installation
 ------------
 
-Current version of the plugin is **1.0.1** (Oct 22, 2013)
+Current version of the plugin is **1.1.0** (Nov 15, 2013)
 
 Prerequisites::
 
