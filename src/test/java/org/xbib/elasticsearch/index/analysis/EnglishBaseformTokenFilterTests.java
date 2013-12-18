@@ -1,10 +1,7 @@
 package org.xbib.elasticsearch.index.analysis;
 
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.util.Version;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.inject.ModulesBuilder;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -17,27 +14,28 @@ import org.elasticsearch.index.IndexNameModule;
 import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.index.analysis.AnalysisService;
 import org.elasticsearch.index.analysis.NamedAnalyzer;
-import org.elasticsearch.index.analysis.TokenFilterFactory;
 import org.elasticsearch.index.settings.IndexSettingsModule;
 import org.elasticsearch.indices.analysis.IndicesAnalysisModule;
 import org.elasticsearch.indices.analysis.IndicesAnalysisService;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.xbib.elasticsearch.plugin.analysis.baseform.AnalysisBaseformPlugin;
 
 import java.io.IOException;
-import java.io.StringReader;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 
 public class EnglishBaseformTokenFilterTests extends Assert {
 
-    @Test
-    public void testOne() throws IOException {
-        AnalysisService analysisService = createAnalysisService();
+    NamedAnalyzer analyzer;
 
-        NamedAnalyzer analyzer = analysisService.analyzer("baseform");
+    @BeforeClass
+    public void create() {
+        AnalysisService analysisService = createAnalysisService();
+        analyzer = analysisService.analyzer("baseform");
+    }
+
+    @Test
+    public void test1() throws IOException {
 
         String source = "“I have a dream that one day this nation will rise up, and live out the true meaning of its creed: ‘We hold these truths to be self-evident: that all men are created equal.’\n" +
                 "I have a dream that one day on the red hills of Georgia the sons of former slaves and the sons of former slave owners will be able to sit down together at a table of brotherhood.\n" +
@@ -144,7 +142,7 @@ public class EnglishBaseformTokenFilterTests extends Assert {
 
     }
 
-    public AnalysisService createAnalysisService() {
+    private AnalysisService createAnalysisService() {
         Settings settings = ImmutableSettings.settingsBuilder()
                 .loadFromClasspath("org/xbib/elasticsearch/index/analysis/baseform_en.json").build();
 
@@ -167,7 +165,7 @@ public class EnglishBaseformTokenFilterTests extends Assert {
         return injector.getInstance(AnalysisService.class);
     }
 
-    public static void assertSimpleTSOutput(TokenStream stream,
+    private static void assertSimpleTSOutput(TokenStream stream,
             String[] expected) throws IOException {
         stream.reset();
         CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);

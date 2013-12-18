@@ -13,8 +13,6 @@ Example: the german base form of ``zurückgezogen`` is ``zurückziehen``.
 Installation
 ------------
 
-Current version of the plugin is **1.1.0** (Nov 15, 2013)
-
 Prerequisites::
 
   Elasticsearch 0.90+
@@ -22,8 +20,7 @@ Prerequisites::
 =============  =========  =================  =============================================================
 ES version     Plugin     Release date       Command
 -------------  ---------  -----------------  -------------------------------------------------------------
-0.90.5         1.0.1      Oct 22, 2013       ./bin/plugin --install baseform --url http://bit.ly/1gAKXYs
-0.90.7         **1.1.0**  Nov 15, 2013       ./bin/plugin --install baseform --url http://bit.ly/1aYlh4G
+0.90.7         **1.2.0**  Dec 18, 2013       ./bin/plugin --install baseform --url http://bit.ly/1i0K770
 =============  =========  =================  =============================================================
 
 Do not forget to restart the node after installing.

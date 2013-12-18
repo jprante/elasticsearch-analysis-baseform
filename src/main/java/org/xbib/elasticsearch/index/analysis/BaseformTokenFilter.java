@@ -47,7 +47,7 @@ public class BaseformTokenFilter extends TokenFilter {
             return true;
         }
         if (input.incrementToken()) {
-            baseform();
+            injectBaseform();
             if (!tokens.isEmpty()) {
                 current = captureState();
             }
@@ -57,11 +57,13 @@ public class BaseformTokenFilter extends TokenFilter {
         }
     }
 
-    protected void baseform() throws CharacterCodingException {
+    protected void injectBaseform() throws CharacterCodingException {
         int start = offsetAtt.startOffset();
         CharSequence term = new String(termAtt.buffer(), 0, termAtt.length());
-        String s = dictionary.lookup(term);
-        tokens.add(new Token(s, start, start + s.length()));
+        CharSequence s = dictionary.lookup(term);
+        if (s != null) {
+            tokens.add(new Token(s.toString(), start, start + s.length()));
+        }
     }
 
     @Override

@@ -47,11 +47,21 @@ public class Dictionary {
         return this;
     }
 
-    public String lookup(CharSequence prefix) throws CharacterCodingException {
+    public CharSequence lookup(CharSequence prefix) throws CharacterCodingException {
+        if (prefix == null || prefix.length() == 0) {
+            return prefix;
+        }
         return lookup(UTF8.newEncoder().encode(CharBuffer.wrap(prefix)), prefix.toString());
     }
 
-    public String lookup(ByteBuffer buf, String result) {
+    public CharSequence lookup(ByteBuffer buf, String request) {
+        return lookup(buf, request, 0);
+    }
+
+    public CharSequence lookup(ByteBuffer buf, String request, int level) {
+        if (level > 3) {
+            return request;
+        }
         MatchResult match = matcher.match(buf.array(), buf.position(), buf.remaining(), fsa.getRootNode());
         switch (match.kind) {
             case SEQUENCE_IS_A_PREFIX: {
@@ -62,7 +72,7 @@ public class Dictionary {
                     if (finalStatesIterator.hasNext()) {
                         buf = finalStatesIterator.next();
                         String s = new String(buf.array(), buf.position(), buf.remaining(), UTF8);
-                        return s.isEmpty() || s.equals(result) ? s : lookup(buf, s);
+                        return s.isEmpty() || s.equals(request) ? s : lookup(buf, s, level + 1);
                     }
                 }
                 break;
@@ -74,7 +84,7 @@ public class Dictionary {
                 break;
             }
         }
-        return result;
+        return request;
     }
 
 }
