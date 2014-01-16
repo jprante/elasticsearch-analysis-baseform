@@ -73,4 +73,10 @@ public class BaseformTokenFilter extends TokenFilter {
         current = null;
     }
 
+    public void close() throws IOException {
+        super.close();
+        tokens.clear();
+        current = null;
+    }
+
 }

@@ -115,8 +115,7 @@ public class GermanBaseformTokenFilterTests extends Assert {
         return injector.getInstance(AnalysisService.class);
     }
 
-    private static void assertSimpleTSOutput(TokenStream stream,
-            String[] expected) throws IOException {
+    private void assertSimpleTSOutput(TokenStream stream, String[] expected) throws IOException {
         stream.reset();
         CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);
         assertNotNull(termAttr);
@@ -126,5 +125,6 @@ public class GermanBaseformTokenFilterTests extends Assert {
             assertEquals(expected[i++], termAttr.toString(), "expected different term at index " + i);
         }
         assertEquals(i, expected.length, "not all tokens produced");
+        stream.close();
     }
 }
