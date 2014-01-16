@@ -1,242 +1,237 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en">
-<head>
-<title>Source code</title>
-<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
-</head>
-<body>
-<div class="sourceContainer">
-<pre><span class="sourceLineNo">001</span>package org.xbib.elasticsearch.analysis.baseform;<a name="line.1"></a>
-<span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span>import java.nio.ByteBuffer;<a name="line.3"></a>
-<span class="sourceLineNo">004</span>import java.util.BitSet;<a name="line.4"></a>
-<span class="sourceLineNo">005</span>import java.util.Collections;<a name="line.5"></a>
-<span class="sourceLineNo">006</span>import java.util.Iterator;<a name="line.6"></a>
-<span class="sourceLineNo">007</span>import java.util.Set;<a name="line.7"></a>
-<span class="sourceLineNo">008</span><a name="line.8"></a>
-<span class="sourceLineNo">009</span>/**<a name="line.9"></a>
-<span class="sourceLineNo">010</span> * This is an abstract class for handling finite state automata. These<a name="line.10"></a>
-<span class="sourceLineNo">011</span> * automata are arc-based, a design described in Jan Daciuk's &lt;i&gt;Incremental<a name="line.11"></a>
-<span class="sourceLineNo">012</span> * Construction of Finite-State Automata and Transducers, and Their Use in the<a name="line.12"></a>
-<span class="sourceLineNo">013</span> * Natural Language Processing&lt;/i&gt; (PhD thesis, Technical University of Gdansk).<a name="line.13"></a>
-<span class="sourceLineNo">014</span> * &lt;p/&gt;<a name="line.14"></a>
-<span class="sourceLineNo">015</span> * &lt;p&gt;<a name="line.15"></a>
-<span class="sourceLineNo">016</span> * Concrete subclasses (implementations) provide varying tradeoffs and features:<a name="line.16"></a>
-<span class="sourceLineNo">017</span> * traversal speed vs. memory size, for example.<a name="line.17"></a>
-<span class="sourceLineNo">018</span> * &lt;/p&gt;<a name="line.18"></a>
-<span class="sourceLineNo">019</span> *<a name="line.19"></a>
-<span class="sourceLineNo">020</span> * @see FSABuilder<a name="line.20"></a>
-<span class="sourceLineNo">021</span> */<a name="line.21"></a>
-<span class="sourceLineNo">022</span>public abstract class FSA implements Iterable&lt;ByteBuffer&gt; {<a name="line.22"></a>
-<span class="sourceLineNo">023</span>    /**<a name="line.23"></a>
-<span class="sourceLineNo">024</span>     * @return Returns the identifier of the root node of this automaton.<a name="line.24"></a>
-<span class="sourceLineNo">025</span>     *         Returns 0 if the start node is also the end node (the automaton<a name="line.25"></a>
-<span class="sourceLineNo">026</span>     *         is empty).<a name="line.26"></a>
-<span class="sourceLineNo">027</span>     */<a name="line.27"></a>
-<span class="sourceLineNo">028</span>    public abstract int getRootNode();<a name="line.28"></a>
-<span class="sourceLineNo">029</span><a name="line.29"></a>
-<span class="sourceLineNo">030</span>    /**<a name="line.30"></a>
-<span class="sourceLineNo">031</span>     * @return Returns the identifier of the first arc leaving &lt;code&gt;node&lt;/code&gt;<a name="line.31"></a>
-<span class="sourceLineNo">032</span>     *         or 0 if the node has no outgoing arcs.<a name="line.32"></a>
-<span class="sourceLineNo">033</span>     */<a name="line.33"></a>
-<span class="sourceLineNo">034</span>    public abstract int getFirstArc(int node);<a name="line.34"></a>
-<span class="sourceLineNo">035</span><a name="line.35"></a>
-<span class="sourceLineNo">036</span>    /**<a name="line.36"></a>
-<span class="sourceLineNo">037</span>     * @return Returns the identifier of the next arc after &lt;code&gt;arc&lt;/code&gt; and<a name="line.37"></a>
-<span class="sourceLineNo">038</span>     *         leaving &lt;code&gt;node&lt;/code&gt;. Zero is returned if no more arcs are<a name="line.38"></a>
-<span class="sourceLineNo">039</span>     *         available for the node.<a name="line.39"></a>
-<span class="sourceLineNo">040</span>     */<a name="line.40"></a>
-<span class="sourceLineNo">041</span>    public abstract int getNextArc(int arc);<a name="line.41"></a>
-<span class="sourceLineNo">042</span><a name="line.42"></a>
-<span class="sourceLineNo">043</span>    /**<a name="line.43"></a>
-<span class="sourceLineNo">044</span>     * @return Returns the identifier of an arc leaving &lt;code&gt;node&lt;/code&gt; and<a name="line.44"></a>
-<span class="sourceLineNo">045</span>     *         labeled with &lt;code&gt;label&lt;/code&gt;. An identifier equal to 0 means<a name="line.45"></a>
-<span class="sourceLineNo">046</span>     *         the node has no outgoing arc labeled &lt;code&gt;label&lt;/code&gt;.<a name="line.46"></a>
-<span class="sourceLineNo">047</span>     */<a name="line.47"></a>
-<span class="sourceLineNo">048</span>    public abstract int getArc(int node, byte label);<a name="line.48"></a>
-<span class="sourceLineNo">049</span><a name="line.49"></a>
-<span class="sourceLineNo">050</span>    /**<a name="line.50"></a>
-<span class="sourceLineNo">051</span>     * Return the label associated with a given &lt;code&gt;arc&lt;/code&gt;.<a name="line.51"></a>
-<span class="sourceLineNo">052</span>     */<a name="line.52"></a>
-<span class="sourceLineNo">053</span>    public abstract byte getArcLabel(int arc);<a name="line.53"></a>
-<span class="sourceLineNo">054</span><a name="line.54"></a>
-<span class="sourceLineNo">055</span>    /**<a name="line.55"></a>
-<span class="sourceLineNo">056</span>     * Returns &lt;code&gt;true&lt;/code&gt; if the destination node at the end of this<a name="line.56"></a>
-<span class="sourceLineNo">057</span>     * &lt;code&gt;arc&lt;/code&gt; corresponds to an input sequence created when building<a name="line.57"></a>
-<span class="sourceLineNo">058</span>     * this automaton.<a name="line.58"></a>
-<span class="sourceLineNo">059</span>     */<a name="line.59"></a>
-<span class="sourceLineNo">060</span>    public abstract boolean isArcFinal(int arc);<a name="line.60"></a>
-<span class="sourceLineNo">061</span><a name="line.61"></a>
-<span class="sourceLineNo">062</span>    /**<a name="line.62"></a>
-<span class="sourceLineNo">063</span>     * Returns &lt;code&gt;true&lt;/code&gt; if this &lt;code&gt;arc&lt;/code&gt; does not have a<a name="line.63"></a>
-<span class="sourceLineNo">064</span>     * terminating node (@link {@link #getEndNode(int)} will throw an<a name="line.64"></a>
-<span class="sourceLineNo">065</span>     * exception). Implies {@link #isArcFinal(int)}.<a name="line.65"></a>
-<span class="sourceLineNo">066</span>     */<a name="line.66"></a>
-<span class="sourceLineNo">067</span>    public abstract boolean isArcTerminal(int arc);<a name="line.67"></a>
-<span class="sourceLineNo">068</span><a name="line.68"></a>
-<span class="sourceLineNo">069</span>    /**<a name="line.69"></a>
-<span class="sourceLineNo">070</span>     * Return the end node pointed to by a given &lt;code&gt;arc&lt;/code&gt;. Terminal arcs<a name="line.70"></a>
-<span class="sourceLineNo">071</span>     * (those that point to a terminal state) have no end node representation<a name="line.71"></a>
-<span class="sourceLineNo">072</span>     * and throw a runtime exception.<a name="line.72"></a>
-<span class="sourceLineNo">073</span>     */<a name="line.73"></a>
-<span class="sourceLineNo">074</span>    public abstract int getEndNode(int arc);<a name="line.74"></a>
-<span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>    /**<a name="line.76"></a>
-<span class="sourceLineNo">077</span>     * Returns a set of flags for this FSA instance.<a name="line.77"></a>
-<span class="sourceLineNo">078</span>     */<a name="line.78"></a>
-<span class="sourceLineNo">079</span>    public abstract Set&lt;FSAFlags&gt; getFlags();<a name="line.79"></a>
-<span class="sourceLineNo">080</span><a name="line.80"></a>
-<span class="sourceLineNo">081</span>    /**<a name="line.81"></a>
-<span class="sourceLineNo">082</span>     * @return Returns the number of sequences reachable from the given state if<a name="line.82"></a>
-<span class="sourceLineNo">083</span>     *         the automaton was compiled with {@link FSAFlags#NUMBERS}. The size of<a name="line.83"></a>
-<span class="sourceLineNo">084</span>     *         the right language of the state, in other words.<a name="line.84"></a>
-<span class="sourceLineNo">085</span>     * @throws UnsupportedOperationException If the automaton was not compiled with<a name="line.85"></a>
-<span class="sourceLineNo">086</span>     *                                       {@link FSAFlags#NUMBERS}. The value can then be computed by manual count<a name="line.86"></a>
-<span class="sourceLineNo">087</span>     *                                       of {@link #getSequences(int)}.<a name="line.87"></a>
-<span class="sourceLineNo">088</span>     */<a name="line.88"></a>
-<span class="sourceLineNo">089</span>    public int getRightLanguageCount(int node) {<a name="line.89"></a>
-<span class="sourceLineNo">090</span>        throw new UnsupportedOperationException("Automaton not compiled with " + FSAFlags.NUMBERS);<a name="line.90"></a>
-<span class="sourceLineNo">091</span>    }<a name="line.91"></a>
-<span class="sourceLineNo">092</span><a name="line.92"></a>
-<span class="sourceLineNo">093</span>    /**<a name="line.93"></a>
-<span class="sourceLineNo">094</span>     * Returns an iterator over all binary sequences starting at the given FSA<a name="line.94"></a>
-<span class="sourceLineNo">095</span>     * state (node) and ending in final nodes. This corresponds to a set of<a name="line.95"></a>
-<span class="sourceLineNo">096</span>     * suffixes of a given prefix from all sequences stored in the automaton.<a name="line.96"></a>
-<span class="sourceLineNo">097</span>     * &lt;p/&gt;<a name="line.97"></a>
-<span class="sourceLineNo">098</span>     * &lt;p&gt;<a name="line.98"></a>
-<span class="sourceLineNo">099</span>     * The returned iterator is a {@link java.nio.ByteBuffer} whose contents changes on<a name="line.99"></a>
-<span class="sourceLineNo">100</span>     * each call to {@link java.util.Iterator#next()}. The keep the contents between calls<a name="line.100"></a>
-<span class="sourceLineNo">101</span>     * to {@link java.util.Iterator#next()}, one must copy the buffer to some other<a name="line.101"></a>
-<span class="sourceLineNo">102</span>     * location.<a name="line.102"></a>
-<span class="sourceLineNo">103</span>     * &lt;/p&gt;<a name="line.103"></a>
-<span class="sourceLineNo">104</span>     * &lt;p/&gt;<a name="line.104"></a>
-<span class="sourceLineNo">105</span>     * &lt;p&gt;<a name="line.105"></a>
-<span class="sourceLineNo">106</span>     * &lt;b&gt;Important.&lt;/b&gt; It is guaranteed that the returned byte buffer is<a name="line.106"></a>
-<span class="sourceLineNo">107</span>     * backed by a byte array and that the content of the byte buffer starts at<a name="line.107"></a>
-<span class="sourceLineNo">108</span>     * the array's index 0.<a name="line.108"></a>
-<span class="sourceLineNo">109</span>     * &lt;/p&gt;<a name="line.109"></a>
-<span class="sourceLineNo">110</span>     *<a name="line.110"></a>
-<span class="sourceLineNo">111</span>     * @see Iterable<a name="line.111"></a>
-<span class="sourceLineNo">112</span>     */<a name="line.112"></a>
-<span class="sourceLineNo">113</span>    public Iterable&lt;ByteBuffer&gt; getSequences(final int node) {<a name="line.113"></a>
-<span class="sourceLineNo">114</span>        if (node == 0) {<a name="line.114"></a>
-<span class="sourceLineNo">115</span>            return Collections.&lt;ByteBuffer&gt;emptyList();<a name="line.115"></a>
-<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
-<span class="sourceLineNo">117</span>        return new Iterable&lt;ByteBuffer&gt;() {<a name="line.117"></a>
-<span class="sourceLineNo">118</span>            public Iterator&lt;ByteBuffer&gt; iterator() {<a name="line.118"></a>
-<span class="sourceLineNo">119</span>                return new FSAFinalStatesIterator(FSA.this, node);<a name="line.119"></a>
-<span class="sourceLineNo">120</span>            }<a name="line.120"></a>
-<span class="sourceLineNo">121</span>        };<a name="line.121"></a>
-<span class="sourceLineNo">122</span>    }<a name="line.122"></a>
-<span class="sourceLineNo">123</span><a name="line.123"></a>
-<span class="sourceLineNo">124</span>    /**<a name="line.124"></a>
-<span class="sourceLineNo">125</span>     * An alias of calling {@link #iterator} directly ({@link FSA} is also<a name="line.125"></a>
-<span class="sourceLineNo">126</span>     * {@link Iterable}).<a name="line.126"></a>
-<span class="sourceLineNo">127</span>     */<a name="line.127"></a>
-<span class="sourceLineNo">128</span>    public final Iterable&lt;ByteBuffer&gt; getSequences() {<a name="line.128"></a>
-<span class="sourceLineNo">129</span>        return getSequences(getRootNode());<a name="line.129"></a>
-<span class="sourceLineNo">130</span>    }<a name="line.130"></a>
-<span class="sourceLineNo">131</span><a name="line.131"></a>
-<span class="sourceLineNo">132</span>    /**<a name="line.132"></a>
-<span class="sourceLineNo">133</span>     * Returns an iterator over all binary sequences starting from the initial<a name="line.133"></a>
-<span class="sourceLineNo">134</span>     * FSA state (node) and ending in final nodes. The returned iterator is a<a name="line.134"></a>
-<span class="sourceLineNo">135</span>     * {@link java.nio.ByteBuffer} whose contents changes on each call to<a name="line.135"></a>
-<span class="sourceLineNo">136</span>     * {@link java.util.Iterator#next()}. The keep the contents between calls to<a name="line.136"></a>
-<span class="sourceLineNo">137</span>     * {@link java.util.Iterator#next()}, one must copy the buffer to some other location.<a name="line.137"></a>
-<span class="sourceLineNo">138</span>     * &lt;p/&gt;<a name="line.138"></a>
-<span class="sourceLineNo">139</span>     * &lt;p&gt;<a name="line.139"></a>
-<span class="sourceLineNo">140</span>     * &lt;b&gt;Important.&lt;/b&gt; It is guaranteed that the returned byte buffer is<a name="line.140"></a>
-<span class="sourceLineNo">141</span>     * backed by a byte array and that the content of the byte buffer starts at<a name="line.141"></a>
-<span class="sourceLineNo">142</span>     * the array's index 0.<a name="line.142"></a>
-<span class="sourceLineNo">143</span>     * &lt;/p&gt;<a name="line.143"></a>
-<span class="sourceLineNo">144</span>     *<a name="line.144"></a>
-<span class="sourceLineNo">145</span>     * @see Iterable<a name="line.145"></a>
-<span class="sourceLineNo">146</span>     */<a name="line.146"></a>
-<span class="sourceLineNo">147</span>    public final Iterator&lt;ByteBuffer&gt; iterator() {<a name="line.147"></a>
-<span class="sourceLineNo">148</span>        return getSequences().iterator();<a name="line.148"></a>
-<span class="sourceLineNo">149</span>    }<a name="line.149"></a>
-<span class="sourceLineNo">150</span><a name="line.150"></a>
-<span class="sourceLineNo">151</span>    /**<a name="line.151"></a>
-<span class="sourceLineNo">152</span>     * Visit all states. The order of visiting is undefined. This method may be faster<a name="line.152"></a>
-<span class="sourceLineNo">153</span>     * than traversing the automaton in post or preorder since it can scan states<a name="line.153"></a>
-<span class="sourceLineNo">154</span>     * linearly. Returning false from {@link StateVisitor#accept(int)}<a name="line.154"></a>
-<span class="sourceLineNo">155</span>     * immediately terminates the traversal.<a name="line.155"></a>
-<span class="sourceLineNo">156</span>     */<a name="line.156"></a>
-<span class="sourceLineNo">157</span>    public &lt;T extends StateVisitor&gt; T visitAllStates(T v) {<a name="line.157"></a>
-<span class="sourceLineNo">158</span>        return visitInPostOrder(v);<a name="line.158"></a>
-<span class="sourceLineNo">159</span>    }<a name="line.159"></a>
-<span class="sourceLineNo">160</span><a name="line.160"></a>
-<span class="sourceLineNo">161</span>    /**<a name="line.161"></a>
-<span class="sourceLineNo">162</span>     * Same as {@link #visitInPostOrder(StateVisitor, int)},<a name="line.162"></a>
-<span class="sourceLineNo">163</span>     * starting from root automaton node.<a name="line.163"></a>
-<span class="sourceLineNo">164</span>     */<a name="line.164"></a>
-<span class="sourceLineNo">165</span>    public &lt;T extends StateVisitor&gt; T visitInPostOrder(T v) {<a name="line.165"></a>
-<span class="sourceLineNo">166</span>        return visitInPostOrder(v, getRootNode());<a name="line.166"></a>
-<span class="sourceLineNo">167</span>    }<a name="line.167"></a>
-<span class="sourceLineNo">168</span><a name="line.168"></a>
-<span class="sourceLineNo">169</span>    /**<a name="line.169"></a>
-<span class="sourceLineNo">170</span>     * Visits all states reachable from &lt;code&gt;node&lt;/code&gt; in postorder.<a name="line.170"></a>
-<span class="sourceLineNo">171</span>     * Returning false from {@link StateVisitor#accept(int)}<a name="line.171"></a>
-<span class="sourceLineNo">172</span>     * immediately terminates the traversal.<a name="line.172"></a>
-<span class="sourceLineNo">173</span>     */<a name="line.173"></a>
-<span class="sourceLineNo">174</span>    public &lt;T extends StateVisitor&gt; T visitInPostOrder(T v, int node) {<a name="line.174"></a>
-<span class="sourceLineNo">175</span>        visitInPostOrder(v, node, new BitSet());<a name="line.175"></a>
-<span class="sourceLineNo">176</span>        return v;<a name="line.176"></a>
-<span class="sourceLineNo">177</span>    }<a name="line.177"></a>
-<span class="sourceLineNo">178</span><a name="line.178"></a>
-<span class="sourceLineNo">179</span>    /**<a name="line.179"></a>
-<span class="sourceLineNo">180</span>     * Private recursion.<a name="line.180"></a>
-<span class="sourceLineNo">181</span>     */<a name="line.181"></a>
-<span class="sourceLineNo">182</span>    private boolean visitInPostOrder(StateVisitor v, int node, BitSet visited) {<a name="line.182"></a>
-<span class="sourceLineNo">183</span>        if (visited.get(node)) {<a name="line.183"></a>
-<span class="sourceLineNo">184</span>            return true;<a name="line.184"></a>
-<span class="sourceLineNo">185</span>        }<a name="line.185"></a>
-<span class="sourceLineNo">186</span>        visited.set(node);<a name="line.186"></a>
-<span class="sourceLineNo">187</span>        for (int arc = getFirstArc(node); arc != 0; arc = getNextArc(arc)) {<a name="line.187"></a>
-<span class="sourceLineNo">188</span>            if (!isArcTerminal(arc)) {<a name="line.188"></a>
-<span class="sourceLineNo">189</span>                if (!visitInPostOrder(v, getEndNode(arc), visited)) {<a name="line.189"></a>
-<span class="sourceLineNo">190</span>                    return false;<a name="line.190"></a>
-<span class="sourceLineNo">191</span>                }<a name="line.191"></a>
-<span class="sourceLineNo">192</span>            }<a name="line.192"></a>
-<span class="sourceLineNo">193</span>        }<a name="line.193"></a>
-<span class="sourceLineNo">194</span>        return v.accept(node);<a name="line.194"></a>
-<span class="sourceLineNo">195</span>    }<a name="line.195"></a>
-<span class="sourceLineNo">196</span><a name="line.196"></a>
-<span class="sourceLineNo">197</span>    /**<a name="line.197"></a>
-<span class="sourceLineNo">198</span>     * Same as {@link #visitInPreOrder(StateVisitor, int)}, starting from root automaton node.<a name="line.198"></a>
-<span class="sourceLineNo">199</span>     */<a name="line.199"></a>
-<span class="sourceLineNo">200</span>    public &lt;T extends StateVisitor&gt; T visitInPreOrder(T v) {<a name="line.200"></a>
-<span class="sourceLineNo">201</span>        return visitInPreOrder(v, getRootNode());<a name="line.201"></a>
-<span class="sourceLineNo">202</span>    }<a name="line.202"></a>
-<span class="sourceLineNo">203</span><a name="line.203"></a>
-<span class="sourceLineNo">204</span>    /**<a name="line.204"></a>
-<span class="sourceLineNo">205</span>     * Visits all states in preorder. Returning false from {@link StateVisitor#accept(int)}<a name="line.205"></a>
-<span class="sourceLineNo">206</span>     * skips traversal of all sub-states of a given state.<a name="line.206"></a>
-<span class="sourceLineNo">207</span>     */<a name="line.207"></a>
-<span class="sourceLineNo">208</span>    public &lt;T extends StateVisitor&gt; T visitInPreOrder(T v, int node) {<a name="line.208"></a>
-<span class="sourceLineNo">209</span>        visitInPreOrder(v, node, new BitSet());<a name="line.209"></a>
-<span class="sourceLineNo">210</span>        return v;<a name="line.210"></a>
-<span class="sourceLineNo">211</span>    }<a name="line.211"></a>
-<span class="sourceLineNo">212</span><a name="line.212"></a>
-<span class="sourceLineNo">213</span>    /**<a name="line.213"></a>
-<span class="sourceLineNo">214</span>     * Private recursion.<a name="line.214"></a>
-<span class="sourceLineNo">215</span>     */<a name="line.215"></a>
-<span class="sourceLineNo">216</span>    private void visitInPreOrder(StateVisitor v, int node, BitSet visited) {<a name="line.216"></a>
-<span class="sourceLineNo">217</span>        if (visited.get(node)) {<a name="line.217"></a>
-<span class="sourceLineNo">218</span>            return;<a name="line.218"></a>
-<span class="sourceLineNo">219</span>        }<a name="line.219"></a>
-<span class="sourceLineNo">220</span>        visited.set(node);<a name="line.220"></a>
-<span class="sourceLineNo">221</span>        if (v.accept(node)) {<a name="line.221"></a>
-<span class="sourceLineNo">222</span>            for (int arc = getFirstArc(node); arc != 0; arc = getNextArc(arc)) {<a name="line.222"></a>
-<span class="sourceLineNo">223</span>                if (!isArcTerminal(arc)) {<a name="line.223"></a>
-<span class="sourceLineNo">224</span>                    visitInPreOrder(v, getEndNode(arc), visited);<a name="line.224"></a>
-<span class="sourceLineNo">225</span>                }<a name="line.225"></a>
-<span class="sourceLineNo">226</span>            }<a name="line.226"></a>
-<span class="sourceLineNo">227</span>        }<a name="line.227"></a>
-<span class="sourceLineNo">228</span>    }<a name="line.228"></a>
-<span class="sourceLineNo">229</span><a name="line.229"></a>
-<span class="sourceLineNo">230</span><a name="line.230"></a>
-<span class="sourceLineNo">231</span>}<a name="line.231"></a>
+<HTML>
+<BODY BGCOLOR="white">
+<PRE>
+<FONT color="green">001</FONT>    package org.xbib.elasticsearch.analysis.baseform;<a name="line.1"></a>
+<FONT color="green">002</FONT>    <a name="line.2"></a>
+<FONT color="green">003</FONT>    import java.nio.ByteBuffer;<a name="line.3"></a>
+<FONT color="green">004</FONT>    import java.util.BitSet;<a name="line.4"></a>
+<FONT color="green">005</FONT>    import java.util.Collections;<a name="line.5"></a>
+<FONT color="green">006</FONT>    import java.util.Iterator;<a name="line.6"></a>
+<FONT color="green">007</FONT>    import java.util.Set;<a name="line.7"></a>
+<FONT color="green">008</FONT>    <a name="line.8"></a>
+<FONT color="green">009</FONT>    /**<a name="line.9"></a>
+<FONT color="green">010</FONT>     * This is an abstract class for handling finite state automata. These<a name="line.10"></a>
+<FONT color="green">011</FONT>     * automata are arc-based, a design described in Jan Daciuk's &lt;i&gt;Incremental<a name="line.11"></a>
+<FONT color="green">012</FONT>     * Construction of Finite-State Automata and Transducers, and Their Use in the<a name="line.12"></a>
+<FONT color="green">013</FONT>     * Natural Language Processing&lt;/i&gt; (PhD thesis, Technical University of Gdansk).<a name="line.13"></a>
+<FONT color="green">014</FONT>     * &lt;p/&gt;<a name="line.14"></a>
+<FONT color="green">015</FONT>     * &lt;p&gt;<a name="line.15"></a>
+<FONT color="green">016</FONT>     * Concrete subclasses (implementations) provide varying tradeoffs and features:<a name="line.16"></a>
+<FONT color="green">017</FONT>     * traversal speed vs. memory size, for example.<a name="line.17"></a>
+<FONT color="green">018</FONT>     * &lt;/p&gt;<a name="line.18"></a>
+<FONT color="green">019</FONT>     *<a name="line.19"></a>
+<FONT color="green">020</FONT>     * @see FSABuilder<a name="line.20"></a>
+<FONT color="green">021</FONT>     */<a name="line.21"></a>
+<FONT color="green">022</FONT>    public abstract class FSA implements Iterable&lt;ByteBuffer&gt; {<a name="line.22"></a>
+<FONT color="green">023</FONT>        /**<a name="line.23"></a>
+<FONT color="green">024</FONT>         * @return Returns the identifier of the root node of this automaton.<a name="line.24"></a>
+<FONT color="green">025</FONT>         *         Returns 0 if the start node is also the end node (the automaton<a name="line.25"></a>
+<FONT color="green">026</FONT>         *         is empty).<a name="line.26"></a>
+<FONT color="green">027</FONT>         */<a name="line.27"></a>
+<FONT color="green">028</FONT>        public abstract int getRootNode();<a name="line.28"></a>
+<FONT color="green">029</FONT>    <a name="line.29"></a>
+<FONT color="green">030</FONT>        /**<a name="line.30"></a>
+<FONT color="green">031</FONT>         * @return Returns the identifier of the first arc leaving &lt;code&gt;node&lt;/code&gt;<a name="line.31"></a>
+<FONT color="green">032</FONT>         *         or 0 if the node has no outgoing arcs.<a name="line.32"></a>
+<FONT color="green">033</FONT>         */<a name="line.33"></a>
+<FONT color="green">034</FONT>        public abstract int getFirstArc(int node);<a name="line.34"></a>
+<FONT color="green">035</FONT>    <a name="line.35"></a>
+<FONT color="green">036</FONT>        /**<a name="line.36"></a>
+<FONT color="green">037</FONT>         * @return Returns the identifier of the next arc after &lt;code&gt;arc&lt;/code&gt; and<a name="line.37"></a>
+<FONT color="green">038</FONT>         *         leaving &lt;code&gt;node&lt;/code&gt;. Zero is returned if no more arcs are<a name="line.38"></a>
+<FONT color="green">039</FONT>         *         available for the node.<a name="line.39"></a>
+<FONT color="green">040</FONT>         */<a name="line.40"></a>
+<FONT color="green">041</FONT>        public abstract int getNextArc(int arc);<a name="line.41"></a>
+<FONT color="green">042</FONT>    <a name="line.42"></a>
+<FONT color="green">043</FONT>        /**<a name="line.43"></a>
+<FONT color="green">044</FONT>         * @return Returns the identifier of an arc leaving &lt;code&gt;node&lt;/code&gt; and<a name="line.44"></a>
+<FONT color="green">045</FONT>         *         labeled with &lt;code&gt;label&lt;/code&gt;. An identifier equal to 0 means<a name="line.45"></a>
+<FONT color="green">046</FONT>         *         the node has no outgoing arc labeled &lt;code&gt;label&lt;/code&gt;.<a name="line.46"></a>
+<FONT color="green">047</FONT>         */<a name="line.47"></a>
+<FONT color="green">048</FONT>        public abstract int getArc(int node, byte label);<a name="line.48"></a>
+<FONT color="green">049</FONT>    <a name="line.49"></a>
+<FONT color="green">050</FONT>        /**<a name="line.50"></a>
+<FONT color="green">051</FONT>         * Return the label associated with a given &lt;code&gt;arc&lt;/code&gt;.<a name="line.51"></a>
+<FONT color="green">052</FONT>         */<a name="line.52"></a>
+<FONT color="green">053</FONT>        public abstract byte getArcLabel(int arc);<a name="line.53"></a>
+<FONT color="green">054</FONT>    <a name="line.54"></a>
+<FONT color="green">055</FONT>        /**<a name="line.55"></a>
+<FONT color="green">056</FONT>         * Returns &lt;code&gt;true&lt;/code&gt; if the destination node at the end of this<a name="line.56"></a>
+<FONT color="green">057</FONT>         * &lt;code&gt;arc&lt;/code&gt; corresponds to an input sequence created when building<a name="line.57"></a>
+<FONT color="green">058</FONT>         * this automaton.<a name="line.58"></a>
+<FONT color="green">059</FONT>         */<a name="line.59"></a>
+<FONT color="green">060</FONT>        public abstract boolean isArcFinal(int arc);<a name="line.60"></a>
+<FONT color="green">061</FONT>    <a name="line.61"></a>
+<FONT color="green">062</FONT>        /**<a name="line.62"></a>
+<FONT color="green">063</FONT>         * Returns &lt;code&gt;true&lt;/code&gt; if this &lt;code&gt;arc&lt;/code&gt; does not have a<a name="line.63"></a>
+<FONT color="green">064</FONT>         * terminating node (@link {@link #getEndNode(int)} will throw an<a name="line.64"></a>
+<FONT color="green">065</FONT>         * exception). Implies {@link #isArcFinal(int)}.<a name="line.65"></a>
+<FONT color="green">066</FONT>         */<a name="line.66"></a>
+<FONT color="green">067</FONT>        public abstract boolean isArcTerminal(int arc);<a name="line.67"></a>
+<FONT color="green">068</FONT>    <a name="line.68"></a>
+<FONT color="green">069</FONT>        /**<a name="line.69"></a>
+<FONT color="green">070</FONT>         * Return the end node pointed to by a given &lt;code&gt;arc&lt;/code&gt;. Terminal arcs<a name="line.70"></a>
+<FONT color="green">071</FONT>         * (those that point to a terminal state) have no end node representation<a name="line.71"></a>
+<FONT color="green">072</FONT>         * and throw a runtime exception.<a name="line.72"></a>
+<FONT color="green">073</FONT>         */<a name="line.73"></a>
+<FONT color="green">074</FONT>        public abstract int getEndNode(int arc);<a name="line.74"></a>
+<FONT color="green">075</FONT>    <a name="line.75"></a>
+<FONT color="green">076</FONT>        /**<a name="line.76"></a>
+<FONT color="green">077</FONT>         * Returns a set of flags for this FSA instance.<a name="line.77"></a>
+<FONT color="green">078</FONT>         */<a name="line.78"></a>
+<FONT color="green">079</FONT>        public abstract Set&lt;FSAFlags&gt; getFlags();<a name="line.79"></a>
+<FONT color="green">080</FONT>    <a name="line.80"></a>
+<FONT color="green">081</FONT>        /**<a name="line.81"></a>
+<FONT color="green">082</FONT>         * @return Returns the number of sequences reachable from the given state if<a name="line.82"></a>
+<FONT color="green">083</FONT>         *         the automaton was compiled with {@link FSAFlags#NUMBERS}. The size of<a name="line.83"></a>
+<FONT color="green">084</FONT>         *         the right language of the state, in other words.<a name="line.84"></a>
+<FONT color="green">085</FONT>         * @throws UnsupportedOperationException If the automaton was not compiled with<a name="line.85"></a>
+<FONT color="green">086</FONT>         *                                       {@link FSAFlags#NUMBERS}. The value can then be computed by manual count<a name="line.86"></a>
+<FONT color="green">087</FONT>         *                                       of {@link #getSequences(int)}.<a name="line.87"></a>
+<FONT color="green">088</FONT>         */<a name="line.88"></a>
+<FONT color="green">089</FONT>        public int getRightLanguageCount(int node) {<a name="line.89"></a>
+<FONT color="green">090</FONT>            throw new UnsupportedOperationException("Automaton not compiled with " + FSAFlags.NUMBERS);<a name="line.90"></a>
+<FONT color="green">091</FONT>        }<a name="line.91"></a>
+<FONT color="green">092</FONT>    <a name="line.92"></a>
+<FONT color="green">093</FONT>        /**<a name="line.93"></a>
+<FONT color="green">094</FONT>         * Returns an iterator over all binary sequences starting at the given FSA<a name="line.94"></a>
+<FONT color="green">095</FONT>         * state (node) and ending in final nodes. This corresponds to a set of<a name="line.95"></a>
+<FONT color="green">096</FONT>         * suffixes of a given prefix from all sequences stored in the automaton.<a name="line.96"></a>
+<FONT color="green">097</FONT>         * &lt;p/&gt;<a name="line.97"></a>
+<FONT color="green">098</FONT>         * &lt;p&gt;<a name="line.98"></a>
+<FONT color="green">099</FONT>         * The returned iterator is a {@link java.nio.ByteBuffer} whose contents changes on<a name="line.99"></a>
+<FONT color="green">100</FONT>         * each call to {@link java.util.Iterator#next()}. The keep the contents between calls<a name="line.100"></a>
+<FONT color="green">101</FONT>         * to {@link java.util.Iterator#next()}, one must copy the buffer to some other<a name="line.101"></a>
+<FONT color="green">102</FONT>         * location.<a name="line.102"></a>
+<FONT color="green">103</FONT>         * &lt;/p&gt;<a name="line.103"></a>
+<FONT color="green">104</FONT>         * &lt;p/&gt;<a name="line.104"></a>
+<FONT color="green">105</FONT>         * &lt;p&gt;<a name="line.105"></a>
+<FONT color="green">106</FONT>         * &lt;b&gt;Important.&lt;/b&gt; It is guaranteed that the returned byte buffer is<a name="line.106"></a>
+<FONT color="green">107</FONT>         * backed by a byte array and that the content of the byte buffer starts at<a name="line.107"></a>
+<FONT color="green">108</FONT>         * the array's index 0.<a name="line.108"></a>
+<FONT color="green">109</FONT>         * &lt;/p&gt;<a name="line.109"></a>
+<FONT color="green">110</FONT>         *<a name="line.110"></a>
+<FONT color="green">111</FONT>         * @see Iterable<a name="line.111"></a>
+<FONT color="green">112</FONT>         */<a name="line.112"></a>
+<FONT color="green">113</FONT>        public Iterable&lt;ByteBuffer&gt; getSequences(final int node) {<a name="line.113"></a>
+<FONT color="green">114</FONT>            if (node == 0) {<a name="line.114"></a>
+<FONT color="green">115</FONT>                return Collections.&lt;ByteBuffer&gt;emptyList();<a name="line.115"></a>
+<FONT color="green">116</FONT>            }<a name="line.116"></a>
+<FONT color="green">117</FONT>            return new Iterable&lt;ByteBuffer&gt;() {<a name="line.117"></a>
+<FONT color="green">118</FONT>                public Iterator&lt;ByteBuffer&gt; iterator() {<a name="line.118"></a>
+<FONT color="green">119</FONT>                    return new FSAFinalStatesIterator(FSA.this, node);<a name="line.119"></a>
+<FONT color="green">120</FONT>                }<a name="line.120"></a>
+<FONT color="green">121</FONT>            };<a name="line.121"></a>
+<FONT color="green">122</FONT>        }<a name="line.122"></a>
+<FONT color="green">123</FONT>    <a name="line.123"></a>
+<FONT color="green">124</FONT>        /**<a name="line.124"></a>
+<FONT color="green">125</FONT>         * An alias of calling {@link #iterator} directly ({@link FSA} is also<a name="line.125"></a>
+<FONT color="green">126</FONT>         * {@link Iterable}).<a name="line.126"></a>
+<FONT color="green">127</FONT>         */<a name="line.127"></a>
+<FONT color="green">128</FONT>        public final Iterable&lt;ByteBuffer&gt; getSequences() {<a name="line.128"></a>
+<FONT color="green">129</FONT>            return getSequences(getRootNode());<a name="line.129"></a>
+<FONT color="green">130</FONT>        }<a name="line.130"></a>
+<FONT color="green">131</FONT>    <a name="line.131"></a>
+<FONT color="green">132</FONT>        /**<a name="line.132"></a>
+<FONT color="green">133</FONT>         * Returns an iterator over all binary sequences starting from the initial<a name="line.133"></a>
+<FONT color="green">134</FONT>         * FSA state (node) and ending in final nodes. The returned iterator is a<a name="line.134"></a>
+<FONT color="green">135</FONT>         * {@link java.nio.ByteBuffer} whose contents changes on each call to<a name="line.135"></a>
+<FONT color="green">136</FONT>         * {@link java.util.Iterator#next()}. The keep the contents between calls to<a name="line.136"></a>
+<FONT color="green">137</FONT>         * {@link java.util.Iterator#next()}, one must copy the buffer to some other location.<a name="line.137"></a>
+<FONT color="green">138</FONT>         * &lt;p/&gt;<a name="line.138"></a>
+<FONT color="green">139</FONT>         * &lt;p&gt;<a name="line.139"></a>
+<FONT color="green">140</FONT>         * &lt;b&gt;Important.&lt;/b&gt; It is guaranteed that the returned byte buffer is<a name="line.140"></a>
+<FONT color="green">141</FONT>         * backed by a byte array and that the content of the byte buffer starts at<a name="line.141"></a>
+<FONT color="green">142</FONT>         * the array's index 0.<a name="line.142"></a>
+<FONT color="green">143</FONT>         * &lt;/p&gt;<a name="line.143"></a>
+<FONT color="green">144</FONT>         *<a name="line.144"></a>
+<FONT color="green">145</FONT>         * @see Iterable<a name="line.145"></a>
+<FONT color="green">146</FONT>         */<a name="line.146"></a>
+<FONT color="green">147</FONT>        public final Iterator&lt;ByteBuffer&gt; iterator() {<a name="line.147"></a>
+<FONT color="green">148</FONT>            return getSequences().iterator();<a name="line.148"></a>
+<FONT color="green">149</FONT>        }<a name="line.149"></a>
+<FONT color="green">150</FONT>    <a name="line.150"></a>
+<FONT color="green">151</FONT>        /**<a name="line.151"></a>
+<FONT color="green">152</FONT>         * Visit all states. The order of visiting is undefined. This method may be faster<a name="line.152"></a>
+<FONT color="green">153</FONT>         * than traversing the automaton in post or preorder since it can scan states<a name="line.153"></a>
+<FONT color="green">154</FONT>         * linearly. Returning false from {@link StateVisitor#accept(int)}<a name="line.154"></a>
+<FONT color="green">155</FONT>         * immediately terminates the traversal.<a name="line.155"></a>
+<FONT color="green">156</FONT>         */<a name="line.156"></a>
+<FONT color="green">157</FONT>        public &lt;T extends StateVisitor&gt; T visitAllStates(T v) {<a name="line.157"></a>
+<FONT color="green">158</FONT>            return visitInPostOrder(v);<a name="line.158"></a>
+<FONT color="green">159</FONT>        }<a name="line.159"></a>
+<FONT color="green">160</FONT>    <a name="line.160"></a>
+<FONT color="green">161</FONT>        /**<a name="line.161"></a>
+<FONT color="green">162</FONT>         * Same as {@link #visitInPostOrder(StateVisitor, int)},<a name="line.162"></a>
+<FONT color="green">163</FONT>         * starting from root automaton node.<a name="line.163"></a>
+<FONT color="green">164</FONT>         */<a name="line.164"></a>
+<FONT color="green">165</FONT>        public &lt;T extends StateVisitor&gt; T visitInPostOrder(T v) {<a name="line.165"></a>
+<FONT color="green">166</FONT>            return visitInPostOrder(v, getRootNode());<a name="line.166"></a>
+<FONT color="green">167</FONT>        }<a name="line.167"></a>
+<FONT color="green">168</FONT>    <a name="line.168"></a>
+<FONT color="green">169</FONT>        /**<a name="line.169"></a>
+<FONT color="green">170</FONT>         * Visits all states reachable from &lt;code&gt;node&lt;/code&gt; in postorder.<a name="line.170"></a>
+<FONT color="green">171</FONT>         * Returning false from {@link StateVisitor#accept(int)}<a name="line.171"></a>
+<FONT color="green">172</FONT>         * immediately terminates the traversal.<a name="line.172"></a>
+<FONT color="green">173</FONT>         */<a name="line.173"></a>
+<FONT color="green">174</FONT>        public &lt;T extends StateVisitor&gt; T visitInPostOrder(T v, int node) {<a name="line.174"></a>
+<FONT color="green">175</FONT>            visitInPostOrder(v, node, new BitSet());<a name="line.175"></a>
+<FONT color="green">176</FONT>            return v;<a name="line.176"></a>
+<FONT color="green">177</FONT>        }<a name="line.177"></a>
+<FONT color="green">178</FONT>    <a name="line.178"></a>
+<FONT color="green">179</FONT>        /**<a name="line.179"></a>
+<FONT color="green">180</FONT>         * Private recursion.<a name="line.180"></a>
+<FONT color="green">181</FONT>         */<a name="line.181"></a>
+<FONT color="green">182</FONT>        private boolean visitInPostOrder(StateVisitor v, int node, BitSet visited) {<a name="line.182"></a>
+<FONT color="green">183</FONT>            if (visited.get(node)) {<a name="line.183"></a>
+<FONT color="green">184</FONT>                return true;<a name="line.184"></a>
+<FONT color="green">185</FONT>            }<a name="line.185"></a>
+<FONT color="green">186</FONT>            visited.set(node);<a name="line.186"></a>
+<FONT color="green">187</FONT>            for (int arc = getFirstArc(node); arc != 0; arc = getNextArc(arc)) {<a name="line.187"></a>
+<FONT color="green">188</FONT>                if (!isArcTerminal(arc)) {<a name="line.188"></a>
+<FONT color="green">189</FONT>                    if (!visitInPostOrder(v, getEndNode(arc), visited)) {<a name="line.189"></a>
+<FONT color="green">190</FONT>                        return false;<a name="line.190"></a>
+<FONT color="green">191</FONT>                    }<a name="line.191"></a>
+<FONT color="green">192</FONT>                }<a name="line.192"></a>
+<FONT color="green">193</FONT>            }<a name="line.193"></a>
+<FONT color="green">194</FONT>            return v.accept(node);<a name="line.194"></a>
+<FONT color="green">195</FONT>        }<a name="line.195"></a>
+<FONT color="green">196</FONT>    <a name="line.196"></a>
+<FONT color="green">197</FONT>        /**<a name="line.197"></a>
+<FONT color="green">198</FONT>         * Same as {@link #visitInPreOrder(StateVisitor, int)}, starting from root automaton node.<a name="line.198"></a>
+<FONT color="green">199</FONT>         */<a name="line.199"></a>
+<FONT color="green">200</FONT>        public &lt;T extends StateVisitor&gt; T visitInPreOrder(T v) {<a name="line.200"></a>
+<FONT color="green">201</FONT>            return visitInPreOrder(v, getRootNode());<a name="line.201"></a>
+<FONT color="green">202</FONT>        }<a name="line.202"></a>
+<FONT color="green">203</FONT>    <a name="line.203"></a>
+<FONT color="green">204</FONT>        /**<a name="line.204"></a>
+<FONT color="green">205</FONT>         * Visits all states in preorder. Returning false from {@link StateVisitor#accept(int)}<a name="line.205"></a>
+<FONT color="green">206</FONT>         * skips traversal of all sub-states of a given state.<a name="line.206"></a>
+<FONT color="green">207</FONT>         */<a name="line.207"></a>
+<FONT color="green">208</FONT>        public &lt;T extends StateVisitor&gt; T visitInPreOrder(T v, int node) {<a name="line.208"></a>
+<FONT color="green">209</FONT>            visitInPreOrder(v, node, new BitSet());<a name="line.209"></a>
+<FONT color="green">210</FONT>            return v;<a name="line.210"></a>
+<FONT color="green">211</FONT>        }<a name="line.211"></a>
+<FONT color="green">212</FONT>    <a name="line.212"></a>
+<FONT color="green">213</FONT>        /**<a name="line.213"></a>
+<FONT color="green">214</FONT>         * Private recursion.<a name="line.214"></a>
+<FONT color="green">215</FONT>         */<a name="line.215"></a>
+<FONT color="green">216</FONT>        private void visitInPreOrder(StateVisitor v, int node, BitSet visited) {<a name="line.216"></a>
+<FONT color="green">217</FONT>            if (visited.get(node)) {<a name="line.217"></a>
+<FONT color="green">218</FONT>                return;<a name="line.218"></a>
+<FONT color="green">219</FONT>            }<a name="line.219"></a>
+<FONT color="green">220</FONT>            visited.set(node);<a name="line.220"></a>
+<FONT color="green">221</FONT>            if (v.accept(node)) {<a name="line.221"></a>
+<FONT color="green">222</FONT>                for (int arc = getFirstArc(node); arc != 0; arc = getNextArc(arc)) {<a name="line.222"></a>
+<FONT color="green">223</FONT>                    if (!isArcTerminal(arc)) {<a name="line.223"></a>
+<FONT color="green">224</FONT>                        visitInPreOrder(v, getEndNode(arc), visited);<a name="line.224"></a>
+<FONT color="green">225</FONT>                    }<a name="line.225"></a>
+<FONT color="green">226</FONT>                }<a name="line.226"></a>
+<FONT color="green">227</FONT>            }<a name="line.227"></a>
+<FONT color="green">228</FONT>        }<a name="line.228"></a>
+<FONT color="green">229</FONT>    <a name="line.229"></a>
+<FONT color="green">230</FONT>    <a name="line.230"></a>
+<FONT color="green">231</FONT>    }<a name="line.231"></a>
 
 
 
@@ -297,7 +292,6 @@
 
 
 
-</pre>
-</div>
-</body>
-</html>
+</PRE>
+</BODY>
+</HTML>
