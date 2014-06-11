@@ -59,10 +59,11 @@ public class BaseformTokenFilter extends TokenFilter {
 
     protected void injectBaseform() throws CharacterCodingException {
         int start = offsetAtt.startOffset();
+        int end = offsetAtt.endOffset();
         CharSequence term = new String(termAtt.buffer(), 0, termAtt.length());
         CharSequence s = dictionary.lookup(term);
         if (s != null) {
-            tokens.add(new Token(s.toString(), start, start + s.length()));
+            tokens.add(new Token(s.toString(), start, end));
         }
     }
 
