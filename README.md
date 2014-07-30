@@ -12,7 +12,7 @@ Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
 | Elasticsearch version    | Plugin      | Release date |
 | ------------------------ | ----------- | -------------|
-| 1.3.0                    | 1.3.0.0     | Jul 30, 2014 |
+| 1.3.1                    | 1.3.0.0     | Jul 30, 2014 |
 
 
 ## Installation
