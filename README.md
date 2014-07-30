@@ -17,7 +17,7 @@ Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
 ## Installation
 
-    ./bin/plugin -install support -url http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/1.3.0.0/elasticsearch-analysis-baseform-1.3.0.0-plugin.zip
+    ./bin/plugin -install analysis-baseform -url http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/1.3.0.0/elasticsearch-analysis-baseform-1.3.0.0-plugin.zip
 
 Do not forget to restart the node after installing.
 
