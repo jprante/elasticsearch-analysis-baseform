@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package org.xbib.elasticsearch.index.analysis.baseform;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>/**<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * This class implements some common matching and scanning operations on a<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * generic FSA.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> */<a name="line.6"></a>
+<span class="sourceLineNo">007</span>public final class FSATraversal {<a name="line.7"></a>
+<span class="sourceLineNo">008</span>    /**<a name="line.8"></a>
+<span class="sourceLineNo">009</span>     * Target automaton.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>     */<a name="line.10"></a>
+<span class="sourceLineNo">011</span>    private final FSA fsa;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>    /**<a name="line.13"></a>
+<span class="sourceLineNo">014</span>     * Traversals of the given FSA.<a name="line.14"></a>
+<span class="sourceLineNo">015</span>     */<a name="line.15"></a>
+<span class="sourceLineNo">016</span>    public FSATraversal(FSA fsa) {<a name="line.16"></a>
+<span class="sourceLineNo">017</span>        this.fsa = fsa;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>    }<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>    /**<a name="line.20"></a>
+<span class="sourceLineNo">021</span>     * Calculate perfect hash for a given input sequence of bytes. The perfect hash requires<a name="line.21"></a>
+<span class="sourceLineNo">022</span>     * that {@link FSA} is built with {@link FSAFlags#NUMBERS} and corresponds to the sequential<a name="line.22"></a>
+<span class="sourceLineNo">023</span>     * order of input sequences used at automaton construction time.<a name="line.23"></a>
+<span class="sourceLineNo">024</span>     *<a name="line.24"></a>
+<span class="sourceLineNo">025</span>     * @param start  Start index in the sequence array.<a name="line.25"></a>
+<span class="sourceLineNo">026</span>     * @param length Length of the byte sequence, must be at least 1.<a name="line.26"></a>
+<span class="sourceLineNo">027</span>     * @return Returns a unique integer assigned to the input sequence in the automaton (reflecting<a name="line.27"></a>
+<span class="sourceLineNo">028</span>     * the number of that sequence in the input used to build the automaton). Returns a negative<a name="line.28"></a>
+<span class="sourceLineNo">029</span>     * integer if the input sequence was not part of the input from which the automaton was created.<a name="line.29"></a>
+<span class="sourceLineNo">030</span>     * The type of mismatch is a constant defined in {@link MatchResult}.<a name="line.30"></a>
+<span class="sourceLineNo">031</span>     */<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    public int perfectHash(byte[] sequence, int start, int length, int node) {<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        assert fsa.getFlags().contains(FSAFlags.NUMBERS) : "FSA not built with NUMBERS option.";<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        assert length &gt; 0 : "must be a non-empty sequence";<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        int hash = 0;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        final int end = start + length - 1;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        int seqIndex = start;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        byte label = sequence[seqIndex];<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>        // Seek through the current node's labels, looking for 'label', update hash.<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        for (int arc = fsa.getFirstArc(node); arc != 0; ) {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>            if (fsa.getArcLabel(arc) == label) {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                if (fsa.isArcFinal(arc)) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                    if (seqIndex == end) {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        return hash;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                    }<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>                    hash++;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                }<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>                if (fsa.isArcTerminal(arc)) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                    /* The automaton contains a prefix of the input sequence. */<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                    return MatchResult.AUTOMATON_HAS_PREFIX;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                }<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>                // The sequence is a prefix of one of the sequences stored in the automaton.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                if (seqIndex == end) {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                    return MatchResult.SEQUENCE_IS_A_PREFIX;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                }<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>                // Make a transition along the arc, go the target node's first arc.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                arc = fsa.getFirstArc(fsa.getEndNode(arc));<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                label = sequence[++seqIndex];<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                continue;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            } else {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                if (fsa.isArcFinal(arc)) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                    hash++;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                if (!fsa.isArcTerminal(arc)) {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                    hash += fsa.getRightLanguageCount(fsa.getEndNode(arc));<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                }<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            }<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>            arc = fsa.getNextArc(arc);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        // Labels of this node ended without a match on the sequence.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        // Perfect hash does not exist.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        return MatchResult.NO_MATCH;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    }<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>    /**<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * @see #perfectHash(byte[], int, int, int)<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public int perfectHash(byte[] sequence) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        return perfectHash(sequence, 0, sequence.length, fsa.getRootNode());<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    /**<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * Same as {@link #match(byte[], int, int, int)}, but allows passing<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * a reusable {@link MatchResult} object so that no intermediate garbage is<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * produced.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * @return The same object as &lt;code&gt;result&lt;/code&gt;, but with reset internal<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * type and other fields.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    public MatchResult match(MatchResult result,<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                             byte[] sequence, int start, int length, int node) {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        if (node == 0) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            result.reset(MatchResult.NO_MATCH, start, node);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            return result;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        final FSA fsa = this.fsa;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        final int end = start + length;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        for (int i = start; i &lt; end; i++) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            final int arc = fsa.getArc(node, sequence[i]);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            if (arc != 0) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                if (fsa.isArcFinal(arc) &amp;&amp; i + 1 == end) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                    /* The automaton has an exact match of the input sequence. */<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                    result.reset(MatchResult.EXACT_MATCH, i, node);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    return result;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                if (fsa.isArcTerminal(arc)) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                        /* The automaton contains a prefix of the input sequence. */<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                    result.reset(MatchResult.AUTOMATON_HAS_PREFIX, i + 1, 0);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                    return result;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                // Make a transition along the arc.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                node = fsa.getEndNode(arc);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            } else {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                result.reset(MatchResult.NO_MATCH, i, node);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                return result;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                /* The sequence is a prefix of at least one sequence in the automaton. */<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        result.reset(MatchResult.SEQUENCE_IS_A_PREFIX, 0, node);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        return result;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    }<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>    /**<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * Finds a matching path in the dictionary for a given sequence of labels<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * from &lt;code&gt;sequence&lt;/code&gt; and starting at node &lt;code&gt;node&lt;/code&gt;.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * @param sequence An array of labels to follow in the FSA.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * @param start    Starting index in &lt;code&gt;sequence&lt;/code&gt;.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * @param length   How many symbols to consider from &lt;code&gt;sequence&lt;/code&gt;?<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * @param node     Start node identifier in the FSA.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     */<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public MatchResult match(byte[] sequence, int start, int length, int node) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        return match(new MatchResult(), sequence, start, length, node);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>    /**<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * @see #match(byte[], int, int, int)<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     */<a name="line.145"></a>
+<span class="sourceLineNo">146</span>    public MatchResult match(byte[] sequence, int node) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        return match(sequence, 0, sequence.length, node);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    }<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>    /**<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     * @see #match(byte[], int, int, int)<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     */<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    public MatchResult match(byte[] sequence) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        return match(sequence, fsa.getRootNode());<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>}<a name="line.156"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

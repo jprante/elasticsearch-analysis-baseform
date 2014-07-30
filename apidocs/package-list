@@ -1,3 +1,2 @@
-org.xbib.elasticsearch.analysis.baseform
-org.xbib.elasticsearch.index.analysis
+org.xbib.elasticsearch.index.analysis.baseform
 org.xbib.elasticsearch.plugin.analysis.baseform
