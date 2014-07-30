@@ -1,4 +1,4 @@
-package org.xbib.elasticsearch.analysis.baseform;
+package org.xbib.elasticsearch.index.analysis.baseform;
 
 import java.util.Set;
 

@@ -1,47 +1,47 @@
+# Elasticsearch Analysis Baseform Plugin
 
-Elasticsearch Analysis Baseform Plugin
-======================================
-
-Baseform is an analysis plugin for `Elasticsearch <http://github.com/elasticsearch/elasticsearch>`_.
+Baseform is an analysis plugin for [Elasticsearch](http://github.com/elasticsearch/elasticsearch).
 
 With the baseform analysis, you can use a token filter for reducing word forms to their base form.
 
 Currently, only baseforms for german and english are implemented.
 
-Example: the german base form of ``zurückgezogen`` is ``zurückziehen``.
+Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
-Installation
-------------
+## Versions
 
-Prerequisites::
+| Elasticsearch version    | Plugin      | Release date |
+| ------------------------ | ----------- | -------------|
+| 1.3.0                    | 1.3.0.0     | Jul 30, 2014 |
 
-  Elasticsearch 0.90+
 
-=============  ===========  =================  =============================================================
-ES version     Plugin       Release date       Command
--------------  -----------  -----------------  -------------------------------------------------------------
-0.90.7         1.2.0        Dec 18, 2013       ./bin/plugin --install baseform --url http://bit.ly/1i0K770
-1.0.0.RC1      1.0.0.RC1.1  Jan 16, 2014       ./bin/plugin --install baseform --url http://bit.ly/LhQSUD
-=============  ===========  =================  =============================================================
+## Installation
+
+    ./bin/plugin -install support -url http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/1.3.0.0/elasticsearch-analysis-baseform-1.3.0.0-plugin.zip
 
 Do not forget to restart the node after installing.
 
-Project docs
-------------
+## Checksum
 
-The Maven project site is available at `Github <http://jprante.github.io/elasticsearch-analysis-baseform>`_
+| File                                                | SHA1                                     |
+| --------------------------------------------------- | -----------------------------------------|
+| elasticsearch-analysis-baseform-1.3.0.0-plugin.zip  | b4010969b6b442302b5b2c59718f83352b6e8ec4 |
 
-Binaries
---------
+Do not forget to restart the node after installing.
 
-Binaries are available at `Bintray <https://bintray.com/pkg/show/general/jprante/elasticsearch-plugins/elasticsearch-analysis-baseform>`_
+## Project docs
 
-Example (german)
-================
+The Maven project site is available at [Github](http://jprante.github.io/elasticsearch-analysis-baseform)
+
+## Issues
+
+All feedback is welcome! If you find issues, please post them at [Github](https://github.com/jprante/elasticsearch-analysis-baseform/issues)
+
+## Example (german)
 
 In the settings, set up a token filter of type "baseform" and language "de"::
 
-  {
+    {
      "index":{
         "analysis":{
             "filter":{
@@ -58,7 +58,7 @@ In the settings, set up a token filter of type "baseform" and language "de"::
             }
         }
      }
-  }
+    }
 
 By using such a tokenizer, the sentence
 "Die Jahresfeier der Rechtsanwaltskanzleien auf dem Donaudampfschiff hat viel Ökosteuer gekostet"
@@ -67,10 +67,9 @@ will be tokenized into
 "auf", "auf", "dem", "der", "Donaudampfschiff", "Donaudampfschiff", "hat", "haben", "viel", "viel",
 "Ökosteuer", "Ökosteuer", "gekostet", "kosten"
 
-It is recommended to add the `Unique token filter <http://www.elasticsearch.org/guide/reference/index-modules/analysis/unique-tokenfilter.html>`_ to skip tokens that occur more than once.
+It is recommended to add the [Unique token filter](http://www.elasticsearch.org/guide/reference/index-modules/analysis/unique-tokenfilter.html) to skip tokens that occur more than once.
 
-Example (english)
-=================
+## Example (english)
 
 In the settings, given this token filter of type "baseform" and language "en" has been set up::
 
@@ -114,10 +113,9 @@ this token stream will be produced::
     "four","little","children","child","in","where","they","not","judged","judge","by","color","their",
     "skin","but","content","character","today"
 
-As an alternative, separate dictionaries for ``en-verbs`` and ``en-nouns`` are available.
+As an alternative, separate dictionaries for `en-verbs` and `en-nouns` are available.
 
-License
-=======
+# License
 
 Elasticsearch Baseform Analysis Plugin
 
@@ -135,8 +133,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Credits
-=======
+# Credits
 
 The FSA for compiling the fullform/baseform table is taken from Dawid Weiss' morfologik project
 

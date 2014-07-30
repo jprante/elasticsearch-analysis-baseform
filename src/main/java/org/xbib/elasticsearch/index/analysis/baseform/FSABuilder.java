@@ -1,18 +1,18 @@
-package org.xbib.elasticsearch.analysis.baseform;
+package org.xbib.elasticsearch.index.analysis.baseform;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.ADDRESS_OFFSET;
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.ARC_SIZE;
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.BIT_ARC_FINAL;
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.BIT_ARC_LAST;
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.FLAGS_OFFSET;
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.LABEL_OFFSET;
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.TARGET_ADDRESS_SIZE;
-import static org.xbib.elasticsearch.analysis.baseform.ConstantArcSizeFSA.TERMINAL_STATE;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.ADDRESS_OFFSET;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.ARC_SIZE;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.BIT_ARC_FINAL;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.BIT_ARC_LAST;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.FLAGS_OFFSET;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.LABEL_OFFSET;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.TARGET_ADDRESS_SIZE;
+import static org.xbib.elasticsearch.index.analysis.baseform.ConstantArcSizeFSA.TERMINAL_STATE;
 
 /**
  * Fast, memory-conservative finite state automaton builder, returning a
@@ -298,7 +298,7 @@ public final class FSABuilder {
 
     /**
      * @return The number of common prefix characters with the previous
-     *         sequence.
+     * sequence.
      */
     private int commonPrefix(byte[] sequence, int start, int len) {
         // Empty root state case.

@@ -1,5 +1,4 @@
-
-package org.xbib.elasticsearch.analysis.baseform;
+package org.xbib.elasticsearch.index.analysis.baseform;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,10 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.xbib.elasticsearch.analysis.baseform.MatchResult.EXACT_MATCH;
-import static org.xbib.elasticsearch.analysis.baseform.MatchResult.NO_MATCH;
-import static org.xbib.elasticsearch.analysis.baseform.MatchResult.SEQUENCE_IS_A_PREFIX;
-
 public class Dictionary {
 
     private final Charset UTF8 = Charset.forName("UTF-8");
@@ -26,7 +21,7 @@ public class Dictionary {
     private FSATraversal matcher;
 
     public Dictionary load(String language) throws IOException {
-        return load(new InputStreamReader(this.getClass().getResourceAsStream(language+"-lemma-utf8.txt"),UTF8));
+        return load(new InputStreamReader(this.getClass().getResourceAsStream(language + "-lemma-utf8.txt"), UTF8));
     }
 
     public Dictionary load(Reader in) throws IOException {
@@ -64,8 +59,8 @@ public class Dictionary {
         }
         MatchResult match = matcher.match(buf.array(), buf.position(), buf.remaining(), fsa.getRootNode());
         switch (match.kind) {
-            case SEQUENCE_IS_A_PREFIX: {
-                final int arc = fsa.getArc(match.node, (byte)'+');
+            case MatchResult.SEQUENCE_IS_A_PREFIX: {
+                final int arc = fsa.getArc(match.node, (byte) '+');
                 if (arc != 0 && !fsa.isArcFinal(arc)) {
                     FSAFinalStatesIterator finalStatesIterator = new FSAFinalStatesIterator(fsa, fsa.getRootNode());
                     finalStatesIterator.restartFrom(fsa.getEndNode(arc));
@@ -77,10 +72,10 @@ public class Dictionary {
                 }
                 break;
             }
-            case EXACT_MATCH: {
+            case MatchResult.EXACT_MATCH: {
                 break;
             }
-            case NO_MATCH: {
+            case MatchResult.NO_MATCH: {
                 break;
             }
         }
