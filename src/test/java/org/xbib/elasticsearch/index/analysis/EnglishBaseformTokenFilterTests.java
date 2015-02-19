@@ -2,6 +2,8 @@ package org.xbib.elasticsearch.index.analysis;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.elasticsearch.Version;
+import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.common.inject.Injector;
 import org.elasticsearch.common.inject.ModulesBuilder;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -17,19 +19,22 @@ import org.elasticsearch.index.analysis.NamedAnalyzer;
 import org.elasticsearch.index.settings.IndexSettingsModule;
 import org.elasticsearch.indices.analysis.IndicesAnalysisModule;
 import org.elasticsearch.indices.analysis.IndicesAnalysisService;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xbib.elasticsearch.plugin.analysis.baseform.AnalysisBaseformPlugin;
 
 import java.io.IOException;
 
-public class EnglishBaseformTokenFilterTests extends Assert {
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-    NamedAnalyzer analyzer;
+public class EnglishBaseformTokenFilterTests {
+
+    static NamedAnalyzer analyzer;
 
     @BeforeClass
-    public void create() {
+    public static void create() {
         AnalysisService analysisService = createAnalysisService();
         analyzer = analysisService.analyzer("baseform");
     }
@@ -142,9 +147,11 @@ public class EnglishBaseformTokenFilterTests extends Assert {
 
     }
 
-    private AnalysisService createAnalysisService() {
+    private static AnalysisService createAnalysisService() {
         Settings settings = ImmutableSettings.settingsBuilder()
-                .loadFromClasspath("org/xbib/elasticsearch/index/analysis/baseform_en.json").build();
+                .loadFromClasspath("org/xbib/elasticsearch/index/analysis/baseform_en.json")
+                .put(IndexMetaData.SETTING_VERSION_CREATED, Version.CURRENT)
+                .build();
 
         Index index = new Index("test");
 
@@ -154,7 +161,7 @@ public class EnglishBaseformTokenFilterTests extends Assert {
                 .createInjector();
 
         AnalysisModule analysisModule = new AnalysisModule(settings, parentInjector.getInstance(IndicesAnalysisService.class));
-        new AnalysisBaseformPlugin().onModule(analysisModule);
+        new AnalysisBaseformPlugin(ImmutableSettings.EMPTY).onModule(analysisModule);
 
         Injector injector = new ModulesBuilder().add(
                 new IndexSettingsModule(index, settings),
@@ -172,9 +179,9 @@ public class EnglishBaseformTokenFilterTests extends Assert {
         int i = 0;
         while (stream.incrementToken()) {
             assertTrue(i < expected.length);
-            assertEquals(expected[i++], termAttr.toString(), "expected different term at index " + i);
+            assertEquals(expected[i++], termAttr.toString());
         }
-        assertEquals(i, expected.length, "not all tokens produced");
+        assertEquals(i, expected.length);
         stream.close();
     }
 }

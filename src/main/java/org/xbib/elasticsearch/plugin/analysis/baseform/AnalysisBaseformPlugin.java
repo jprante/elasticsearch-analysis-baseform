@@ -1,10 +1,19 @@
 package org.xbib.elasticsearch.plugin.analysis.baseform;
 
+import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.plugins.AbstractPlugin;
-import org.xbib.elasticsearch.index.analysis.baseform.BaseformTokenFilterFactory;
+import org.xbib.elasticsearch.index.analysis.baseform.BaseformAnalysisBinderProcessor;
 
 public class AnalysisBaseformPlugin extends AbstractPlugin {
+
+    private final Settings settings;
+
+    @Inject
+    public AnalysisBaseformPlugin(Settings settings) {
+        this.settings = settings;
+    }
 
     @Override
     public String name() {
@@ -19,6 +28,8 @@ public class AnalysisBaseformPlugin extends AbstractPlugin {
     }
 
     public void onModule(AnalysisModule module) {
-        module.addTokenFilter("baseform", BaseformTokenFilterFactory.class);
+        if (settings.getAsBoolean("plugins.baseform.enabled", true)) {
+            module.addProcessor(new BaseformAnalysisBinderProcessor());
+        }
     }
 }
