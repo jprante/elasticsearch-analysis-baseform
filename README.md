@@ -10,22 +10,14 @@ Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
 ## Versions
 
-| Elasticsearch version    | Plugin      | Release date |
-| ------------------------ | ----------- | -------------|
-| 1.3.1                    | 1.3.0.0     | Jul 30, 2014 |
-
+| Plugin    | Elasticsearch   | Release date |
+| --------- | --------------- | -------------|
+| 1.4.0.0   | 1.4.0           | Feb 19, 2015 |
+| 1.3.0.0   | 1.3.1           | Jul 30, 2014 |
 
 ## Installation
 
-    ./bin/plugin -install analysis-baseform -url http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/1.3.0.0/elasticsearch-analysis-baseform-1.3.0.0-plugin.zip
-
-Do not forget to restart the node after installing.
-
-## Checksum
-
-| File                                                | SHA1                                     |
-| --------------------------------------------------- | -----------------------------------------|
-| elasticsearch-analysis-baseform-1.3.0.0-plugin.zip  | b4010969b6b442302b5b2c59718f83352b6e8ec4 |
+    ./bin/plugin -install analysis-baseform -url http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/1.4.0.0/elasticsearch-analysis-baseform-1.4.0.0-plugin.zip
 
 Do not forget to restart the node after installing.
 
