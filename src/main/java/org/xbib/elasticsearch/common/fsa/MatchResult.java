@@ -1,4 +1,4 @@
-package org.xbib.elasticsearch.index.analysis.baseform;
+package org.xbib.elasticsearch.common.fsa;
 
 /**
  * A matching result returned from {@link FSATraversal}.
@@ -20,10 +20,9 @@ public final class MatchResult {
      * The automaton contains a prefix of the input sequence. That is:
      * one of the input sequences used to build the automaton is a
      * prefix of the input sequence that is shorter than the sequence.
-     * <p/>
-     * <p>{@link MatchResult#index} will contain an index of the
+     * {@link MatchResult#index} will contain an index of the
      * first character of the input sequence not present in the
-     * dictionary.</p>
+     * dictionary.
      */
     public static final int AUTOMATON_HAS_PREFIX = -3;
 

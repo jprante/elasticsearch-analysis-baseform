@@ -1,4 +1,4 @@
-package org.xbib.elasticsearch.index.analysis.baseform;
+package org.xbib.elasticsearch.common.fsa;
 
 import java.util.Set;
 
@@ -48,21 +48,19 @@ public enum FSAFlags {
      */
     public final int bits;
 
-    /** */
     private FSAFlags(int bits) {
         this.bits = bits;
     }
 
     /**
-     * Returns <code>true</code> if the corresponding flag is set in the bit set.
+     * @param flag flag
+     * @param flags flags
+     * @return <code>true</code> if the corresponding flag is set in the bit set.
      */
     public static boolean isSet(int flags, FSAFlags flag) {
         return (flags & flag.bits) != 0;
     }
 
-    /**
-     * Returns the set of flags encoded in a single short.
-     */
     public static short asShort(Set<FSAFlags> flags) {
         short value = 0;
         for (FSAFlags f : flags) {

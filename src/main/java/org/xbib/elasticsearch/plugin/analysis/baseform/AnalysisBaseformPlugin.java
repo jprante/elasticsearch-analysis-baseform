@@ -3,10 +3,10 @@ package org.xbib.elasticsearch.plugin.analysis.baseform;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.analysis.AnalysisModule;
-import org.elasticsearch.plugins.AbstractPlugin;
+import org.elasticsearch.plugins.Plugin;
 import org.xbib.elasticsearch.index.analysis.baseform.BaseformAnalysisBinderProcessor;
 
-public class AnalysisBaseformPlugin extends AbstractPlugin {
+public class AnalysisBaseformPlugin extends Plugin {
 
     private final Settings settings;
 
@@ -17,9 +17,7 @@ public class AnalysisBaseformPlugin extends AbstractPlugin {
 
     @Override
     public String name() {
-        return "analysis-baseform-" +
-                Build.getInstance().getVersion() + "-" +
-                Build.getInstance().getShortHash();
+        return "analysis-baseform";
     }
 
     @Override
