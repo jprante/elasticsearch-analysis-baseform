@@ -1,6 +1,5 @@
 apply plugin: 'io.codearte.nexus-staging'
 
-
 /*
 nexus {
     attachJavadoc = true
@@ -18,27 +17,23 @@ nexusStaging {
 
 uploadArchives {
     repositories {
-        if (project.hasProperty("xbibUsername")) {
-            mavenDeployer {
-                configuration = configurations.wagon
-                repository(id: 'xbib.org',
-                        url: uri('scpexe://xbib.org/repository'),
-                        authentication: [userName: xbibUsername, privateKey: xbibPrivateKey])
-            }
-        }
         if (project.hasProperty('ossrhUsername')) {
             mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-                repository(id: 'ossrh', url: uri(ossrhReleaseUrl),
-                        authentication: [userName: ossrhUsername, password: ossrhPassword])
-                snapshotRepository(id: 'ossrh', url: uri(ossrhSnapshotUrl),
-                        authentication: [userName: ossrhUsername, password: ossrhPassword])
+                beforeDeployment {
+                    MavenDeployment deployment -> signing.signPom(deployment)
+                }
+                repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                        authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+                snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots') {
+                        authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
                 pom.project {
                     name pluginName
                     description pluginDescription
                     packaging 'jar'
                     inceptionYear '2012'
-                    url url
+                    url scmUrl
                     organization {
                         name 'xbib'
                         url 'http://xbib.org'
@@ -62,6 +57,14 @@ uploadArchives {
                             url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                         }
                     }
+                }
+            }
+        }
+        if (project.hasProperty("xbibUsername")) {
+            mavenDeployer {
+                configuration = configurations.wagon
+                repository(url: 'scpexe://xbib.org/repository') {
+                    authentication(userName: xbibUsername, privateKey: xbibPrivateKey)
                 }
             }
         }

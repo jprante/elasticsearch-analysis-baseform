@@ -12,6 +12,7 @@ Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
 | Plugin    | Elasticsearch   | Release date |
 | --------- | --------------- | -------------|
+| 2.2.1.1   | 2.2.1           | Jun 22, 2016 |
 | 2.2.1.0   | 2.2.1           | Apr 23, 2016 |
 | 1.4.0.0   | 1.4.0           | Feb 19, 2015 |
 | 1.3.0.0   | 1.3.1           | Jul 30, 2014 |
@@ -20,7 +21,7 @@ Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
 ### Elasticsearch 2.x
 
-    ./bin/plugin install http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/2.2.1.0/elasticsearch-analysis-baseform-2.2.1.0-plugin.zip
+    ./bin/plugin install http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/2.2.1.1/elasticsearch-analysis-baseform-2.2.1.1-plugin.zip
 
 ### Elasticsearch 1.x
 

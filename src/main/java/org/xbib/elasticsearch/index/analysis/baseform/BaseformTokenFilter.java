@@ -3,7 +3,6 @@ package org.xbib.elasticsearch.index.analysis.baseform;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource;
@@ -21,15 +20,13 @@ public class BaseformTokenFilter extends TokenFilter {
 
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
-    private final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
-
     private final PositionIncrementAttribute posIncAtt = addAttribute(PositionIncrementAttribute.class);
 
     private AttributeSource.State current;
 
     protected BaseformTokenFilter(TokenStream input, Dictionary dictionary) {
         super(input);
-        this.tokens = new LinkedList<PackedTokenAttributeImpl>();
+        this.tokens = new LinkedList<>();
         this.dictionary = dictionary;
     }
 
@@ -40,7 +37,6 @@ public class BaseformTokenFilter extends TokenFilter {
             PackedTokenAttributeImpl token = tokens.removeFirst();
             restoreState(current);
             termAtt.setEmpty().append(token);
-            offsetAtt.setOffset(token.startOffset(), token.endOffset());
             posIncAtt.setPositionIncrement(0);
             return true;
         }
