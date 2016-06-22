@@ -15,7 +15,24 @@ nexusStaging {
     packageGroup = "org.xbib"
 }
 
-uploadArchives {
+task xbibUpload(type: Upload) {
+    configuration = configurations.archives
+    uploadDescriptor = true
+    repositories {
+        if (project.hasProperty("xbibUsername")) {
+            mavenDeployer {
+                configuration = configurations.wagon
+                repository(url: 'scpexe://xbib.org/repository') {
+                    authentication(userName: xbibUsername, privateKey: xbibPrivateKey)
+                }
+            }
+        }
+    }
+}
+
+task mavenCentralUpload(type: Upload) {
+    configuration = configurations.archives
+    uploadDescriptor = true
     repositories {
         if (project.hasProperty('ossrhUsername')) {
             mavenDeployer {
@@ -57,14 +74,6 @@ uploadArchives {
                             url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                         }
                     }
-                }
-            }
-        }
-        if (project.hasProperty("xbibUsername")) {
-            mavenDeployer {
-                configuration = configurations.wagon
-                repository(url: 'scpexe://xbib.org/repository') {
-                    authentication(userName: xbibUsername, privateKey: xbibPrivateKey)
                 }
             }
         }
