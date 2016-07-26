@@ -1,17 +1,17 @@
 group = 'org.xbib.elasticsearch.plugin'
-version = '2.2.1.0'
+version = '2.2.0.0'
 
 ext {
-    pluginName = 'bundle'
-    pluginClassname  = 'org.xbib.elasticsearch.plugin.bundle.BundlePlugin'
-    pluginDescription = 'A bundle of plugins for Elasticsearch'
+    pluginName = 'baseform'
+    pluginClassname  = 'org.xbib.elasticsearch.plugin.baseform.AnalysisBaseformPlugin'
+    pluginDescription = 'Baseform plugin for Elasticsearch'
     user = 'jprante'
     name = 'elasticsearch-analysis-baseform'
     scmUrl = 'https://github.com/' + user + '/' + name
     scmConnection = 'scm:git:git://github.com/' + user + '/' + name + '.git'
     scmDeveloperConnection = 'scm:git:git://github.com/' + user + '/' + name + '.git'
     versions = [
-        'elasticsearch' : '2.2.1',
+        'elasticsearch' : '2.2.0',
         'log4j': '2.5',
         'junit' : '4.12'
     ]
@@ -83,8 +83,7 @@ tasks.withType(JavaCompile) {
 }
 
 test {
-    //include '**/CustomTokenizerTest*'
-    systemProperties['path.home'] = System.getProperty("user.dir")
+    systemProperty 'path.home', projectDir.absolutePath
     testLogging {
         showStandardStreams = false
         exceptionFormat = 'full'
