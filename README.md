@@ -21,7 +21,7 @@ Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
 ### Elasticsearch 2.x
 
-    ./bin/plugin install http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/2.2.1.1/elasticsearch-analysis-baseform-2.2.1.1-plugin.zip
+    ./bin/plugin install http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/2.2.1.0/elasticsearch-analysis-baseform-2.2.1.0-plugin.zip
 
 ### Elasticsearch 1.x
 
