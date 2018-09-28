@@ -8,26 +8,9 @@ Currently, only baseforms for german and english are implemented.
 
 Example: the german base form of `zurückgezogen` is `zurückziehen`.
 
-## Versions
-
-| Plugin    | Elasticsearch   | Release date |
-| --------- | --------------- | -------------|
-| 2.2.1.1   | 2.2.1           | Jun 22, 2016 |
-| 2.2.1.0   | 2.2.1           | Apr 23, 2016 |
-| 1.4.0.0   | 1.4.0           | Feb 19, 2015 |
-| 1.3.0.0   | 1.3.1           | Jul 30, 2014 |
-
 ## Installation
 
-### Elasticsearch 2.x
-
-    ./bin/plugin install http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/2.2.1.1/elasticsearch-analysis-baseform-2.2.1.1-plugin.zip
-
-### Elasticsearch 1.x
-
-    ./bin/plugin -install analysis-baseform -url http://xbib.org/repository/org/xbib/elasticsearch/plugin/elasticsearch-analysis-baseform/1.4.0.0/elasticsearch-analysis-baseform-1.4.0.0-plugin.zip
-
-Do not forget to restart the node after installing.
+Use Gradle to build the plugin and install it using the elasticsearch-plugin command. Check the "gradle.properties" for the supported version.
 
 ## Project docs
 
