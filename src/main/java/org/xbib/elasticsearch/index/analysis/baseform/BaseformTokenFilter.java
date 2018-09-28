@@ -1,5 +1,14 @@
 package org.xbib.elasticsearch.index.analysis.baseform;
 
+import java.io.IOException;
+import java.nio.charset.CharacterCodingException;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -8,11 +17,19 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource;
 import org.xbib.elasticsearch.common.fsa.Dictionary;
 
-import java.io.IOException;
-import java.nio.charset.CharacterCodingException;
-import java.util.LinkedList;
-
 public class BaseformTokenFilter extends TokenFilter {
+
+	private static final Logger LOG = LogManager.getLogger(BaseformTokenFilter.class);
+
+    private static ConcurrentHashMap<CharSequence, CharSequence> TERM_CACHE;
+
+    private static final AtomicLong termCacheCount = new AtomicLong(0);
+
+    private static final AtomicBoolean needsClearCache = new AtomicBoolean(false); 
+
+    private static long MAX_CACHE_SIZE;
+
+    private static final CharSequence NO_TERMS = "";
 
     private final LinkedList<PackedTokenAttributeImpl> tokens;
 
@@ -24,10 +41,13 @@ public class BaseformTokenFilter extends TokenFilter {
 
     private AttributeSource.State current;
 
-    protected BaseformTokenFilter(TokenStream input, Dictionary dictionary) {
+    protected BaseformTokenFilter(TokenStream input, Dictionary dictionary, long maxCacheSize) {
         super(input);
         this.tokens = new LinkedList<>();
-        this.dictionary = dictionary;
+        this.dictionary = dictionary;        if (TERM_CACHE == null) {
+    			TERM_CACHE = new ConcurrentHashMap<CharSequence, CharSequence>();
+    			MAX_CACHE_SIZE = maxCacheSize;
+        }
     }
 
     @Override
@@ -53,13 +73,39 @@ public class BaseformTokenFilter extends TokenFilter {
 
     protected void baseform() throws CharacterCodingException {
         CharSequence term = new String(termAtt.buffer(), 0, termAtt.length());
-        CharSequence s = dictionary.lookup(term);
+        if (needsClearCache.get()) {
+        		checkCacheSize();
+        }
+		CharSequence s = TERM_CACHE.computeIfAbsent(term, t -> {
+			if (termCacheCount.incrementAndGet() > MAX_CACHE_SIZE) {
+				needsClearCache.set(true);
+			}
+
+			try {
+				CharSequence baseform = dictionary.lookup(t);
+				if (baseform == null) {
+					return NO_TERMS;
+				}
+				return baseform;
+			} catch (CharacterCodingException e) {
+				return NO_TERMS;
+			}
+		});
         if (s != null && s.length() > 0) {
             PackedTokenAttributeImpl impl = new PackedTokenAttributeImpl();
             impl.append(s);
             tokens.add(impl);
         }
     }
+    
+	private void checkCacheSize() {
+		needsClearCache.set(false);
+		final Runtime runtime = Runtime.getRuntime();
+		long memoryUsage = runtime.totalMemory() - runtime.freeMemory();
+		TERM_CACHE = new ConcurrentHashMap<CharSequence, CharSequence>();
+		termCacheCount.set(0);
+		LOG.warn("Clearing term cache for baseform, memory usage: " + memoryUsage);
+	}
 
     @Override
     public void reset() throws IOException {
