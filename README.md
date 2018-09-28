@@ -61,11 +61,14 @@ In the settings, set up a token filter of type "baseform" and language "de"::
     }
 
 By using such a tokenizer, the sentence
-"Die Jahresfeier der Rechtsanwaltskanzleien auf dem Donaudampfschiff hat viel Ökosteuer gekostet"
+
+    "Die Jahresfeier der Rechtsanwaltskanzleien auf dem Donaudampfschiff hat viel Ökosteuer gekostet"
+
 will be tokenized into
-"Die", "Die", "Jahresfeier", "Jahresfeier", "der", "der", "Rechtsanwaltskanzleien", "Rechtsanwaltskanzlei",
-"auf", "auf", "dem", "der", "Donaudampfschiff", "Donaudampfschiff", "hat", "haben", "viel", "viel",
-"Ökosteuer", "Ökosteuer", "gekostet", "kosten"
+
+    "Die", "Die", "Jahresfeier", "Jahresfeier", "der", "der", "Rechtsanwaltskanzleien", "Rechtsanwaltskanzlei",
+    "auf", "auf", "dem", "der", "Donaudampfschiff", "Donaudampfschiff", "hat", "haben", "viel", "viel",
+    "Ökosteuer", "Ökosteuer", "gekostet", "kosten"
 
 It is recommended to add the [Unique token filter](http://www.elasticsearch.org/guide/reference/index-modules/analysis/unique-tokenfilter.html) to skip tokens that occur more than once.
 
@@ -115,6 +118,18 @@ this token stream will be produced::
 
 As an alternative, separate dictionaries for `en-verbs` and `en-nouns` are available.
 
+## Caching
+
+The time consumed by the baseform computation may increase your overall indexing time drastically if applied in the billions. You can configure the cache size (in number of entries) for mapping a token to an array of baseform tokens.
+Reaching the cache size limit results in clearing of the cache and starting anew. This setting and the cache respectively is applied to a node, so configure it in the elasticsearch.yml file:
+
+```
+# default: 8388608 entries
+# minimum: 131072 entries
+# baseform_max_cache_size: 8388608
+```
+
+
 # License
 
 Elasticsearch Baseform Analysis Plugin
@@ -148,3 +163,5 @@ and is distributed under CC-BY-SA http://creativecommons.org/licenses/by-sa/3.0/
 The english baseforms are a modified version of the english.dict file
 of http://languagetool.org/download/snapshots/LanguageTool-20131115-snapshot.zip
 which is licensed under LGPL http://www.fsf.org/licensing/licenses/lgpl.html#SEC1
+
+GBI-Genios Deutsche Wirtschaftsdatenbank GmbH for adding the caching-functionality.
