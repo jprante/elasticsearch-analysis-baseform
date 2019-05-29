@@ -13,13 +13,18 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
+import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource;
+import org.apache.lucene.util.BytesRef;
 import org.xbib.elasticsearch.common.fsa.Dictionary;
 
 public class BaseformTokenFilter extends TokenFilter {
 
 	private static final Logger LOG = LogManager.getLogger(BaseformTokenFilter.class);
+
+	private static final byte ORIGINAL_TYPE = 1;
+	private static final byte BASEFORM_TYPE = 4;
 
     private static ConcurrentHashMap<CharSequence, CharSequence> TERM_CACHE;
 
@@ -36,6 +41,8 @@ public class BaseformTokenFilter extends TokenFilter {
     private final Dictionary dictionary;
 
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    
+    private final PayloadAttribute payloadAtt = addAttribute(PayloadAttribute.class);
 
     private final PositionIncrementAttribute posIncAtt = addAttribute(PositionIncrementAttribute.class);
 
@@ -58,6 +65,7 @@ public class BaseformTokenFilter extends TokenFilter {
             restoreState(current);
             termAtt.setEmpty().append(token);
             posIncAtt.setPositionIncrement(0);
+            setPayload(BASEFORM_TYPE);
             return true;
         }
         if (input.incrementToken()) {
@@ -65,6 +73,7 @@ public class BaseformTokenFilter extends TokenFilter {
             if (!tokens.isEmpty()) {
                 current = captureState();
             }
+            setPayload(ORIGINAL_TYPE);
             return true;
         } else {
             return false;
@@ -83,7 +92,7 @@ public class BaseformTokenFilter extends TokenFilter {
 
 			try {
 				CharSequence baseform = dictionary.lookup(t);
-				if (baseform == null) {
+				if (baseform == null || term.equals(baseform)) {
 					return NO_TERMS;
 				}
 				return baseform;
@@ -97,7 +106,24 @@ public class BaseformTokenFilter extends TokenFilter {
             tokens.add(impl);
         }
     }
-    
+
+    private void setPayload(byte tokenType) {
+		BytesRef payload = payloadAtt.getPayload();
+		if (tokenType == ORIGINAL_TYPE) {
+			if (payload == null) {
+				payload = new BytesRef();
+			}
+		} else {
+			if (payload != null && payload.length > 0) {
+				payload = BytesRef.deepCopyOf(payload);
+			} else {
+				payload = new BytesRef(new byte[1]);
+			}
+			payload.bytes[payload.offset] |= tokenType;
+		}
+		payloadAtt.setPayload(payload);
+	}
+
 	private void checkCacheSize() {
 		needsClearCache.set(false);
 		final Runtime runtime = Runtime.getRuntime();
