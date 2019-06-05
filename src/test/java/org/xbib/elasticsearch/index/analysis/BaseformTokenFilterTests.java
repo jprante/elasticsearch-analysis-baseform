@@ -24,24 +24,17 @@ public class BaseformTokenFilterTests extends ESTestCase {
 
         String[] expected = {
                 "Die",
-                "Die",
                 "Jahresfeier",
-                "Jahresfeier",
-                "der",
                 "der",
                 "Rechtsanwaltskanzleien",
                 "Rechtsanwaltskanzlei",
                 "auf",
-                "auf",
                 "dem",
                 "der",
-                "Donaudampfschiff",
                 "Donaudampfschiff",
                 "hat",
                 "haben",
                 "viel",
-                "viel",
-                "Ökosteuer",
                 "Ökosteuer",
                 "gekostet",
                 "kosten"
@@ -60,8 +53,6 @@ public class BaseformTokenFilterTests extends ESTestCase {
 
         String[] expected = {
                 "Das",
-                "Das",
-                "sind",
                 "sind",
                 "Autos",
                 "Auto",
@@ -69,7 +60,6 @@ public class BaseformTokenFilterTests extends ESTestCase {
                 "der",
                 "Nudeln",
                 "Nudel",
-                "transportieren",
                 "transportieren"
         };
         TestAnalysis analysis = createTestAnalysis();
@@ -89,8 +79,6 @@ public class BaseformTokenFilterTests extends ESTestCase {
                 "wurde",
                 "werden",
                 "zum",
-                "zum",
-                "tollen",
                 "tollen",
                 "gemacht",
                 "machen"
