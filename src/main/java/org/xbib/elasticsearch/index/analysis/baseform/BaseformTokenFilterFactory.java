@@ -1,34 +1,33 @@
 package org.xbib.elasticsearch.index.analysis.baseform;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import org.apache.lucene.analysis.TokenStream;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.Index;
+import org.elasticsearch.index.IndexSettings;
 import org.elasticsearch.index.analysis.AbstractTokenFilterFactory;
-import org.elasticsearch.index.settings.IndexSettingsService;
 import org.xbib.elasticsearch.common.fsa.Dictionary;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class BaseformTokenFilterFactory extends AbstractTokenFilterFactory {
 
     private final Dictionary dictionary;
 
+    private final long maxCacheSize;
+
     @Inject
-    public BaseformTokenFilterFactory(Index index,
-                                      IndexSettingsService indexSettingsService,
-                                      @Assisted String name,
-                                      @Assisted Settings settings) {
-        super(index, indexSettingsService.indexSettings(), name, settings);
+    public BaseformTokenFilterFactory(IndexSettings indexSettings, @Assisted String name, @Assisted Settings settings, long maxCacheSize) {
+        super(indexSettings, name, settings);
         this.dictionary = createDictionary(settings);
+        this.maxCacheSize = maxCacheSize;
     }
 
     @Override
     public TokenStream create(TokenStream tokenStream) {
-        return new BaseformTokenFilter(tokenStream, dictionary);
+        return new BaseformTokenFilter(tokenStream, dictionary, maxCacheSize);
     }
 
     private Dictionary createDictionary(Settings settings) {

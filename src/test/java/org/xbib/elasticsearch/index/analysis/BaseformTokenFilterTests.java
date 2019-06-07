@@ -1,20 +1,22 @@
 package org.xbib.elasticsearch.index.analysis;
 
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-
-import org.elasticsearch.index.analysis.AnalysisService;
-import org.elasticsearch.index.analysis.TokenFilterFactory;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.StringReader;
 
-public class BaseformTokenFilterTests extends Assert {
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.elasticsearch.Version;
+import org.elasticsearch.cluster.metadata.IndexMetaData;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.IndexSettings;
+import org.elasticsearch.index.analysis.TokenFilterFactory;
+import org.elasticsearch.test.ESTestCase;
+import org.junit.Test;
+import org.xbib.elasticsearch.plugin.analysis.baseform.AnalysisBaseformPlugin;
 
+public class BaseformTokenFilterTests extends ESTestCase {
+	
     @Test
     public void testOne() throws IOException {
 
@@ -22,31 +24,24 @@ public class BaseformTokenFilterTests extends Assert {
 
         String[] expected = {
                 "Die",
-                "Die",
                 "Jahresfeier",
-                "Jahresfeier",
-                "der",
                 "der",
                 "Rechtsanwaltskanzleien",
                 "Rechtsanwaltskanzlei",
                 "auf",
-                "auf",
                 "dem",
                 "der",
-                "Donaudampfschiff",
                 "Donaudampfschiff",
                 "hat",
                 "haben",
                 "viel",
-                "viel",
-                "Ökosteuer",
                 "Ökosteuer",
                 "gekostet",
                 "kosten"
         };
-        AnalysisService analysisService = MapperTestUtils.analysisService();
-        TokenFilterFactory tokenFilter = analysisService.tokenFilter("baseform");
-        Tokenizer tokenizer = analysisService.tokenizer("standard").create();
+        TestAnalysis analysis = createTestAnalysis();
+        TokenFilterFactory tokenFilter = analysis.tokenFilter.get("baseform");
+        Tokenizer tokenizer = analysis.tokenizer.get("standard").create();
         tokenizer.setReader(new StringReader(source));
         assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);
     }
@@ -58,8 +53,6 @@ public class BaseformTokenFilterTests extends Assert {
 
         String[] expected = {
                 "Das",
-                "Das",
-                "sind",
                 "sind",
                 "Autos",
                 "Auto",
@@ -67,12 +60,11 @@ public class BaseformTokenFilterTests extends Assert {
                 "der",
                 "Nudeln",
                 "Nudel",
-                "transportieren",
                 "transportieren"
         };
-        AnalysisService analysisService = MapperTestUtils.analysisService();
-        TokenFilterFactory tokenFilter = analysisService.tokenFilter("baseform");
-        Tokenizer tokenizer = analysisService.tokenizer("standard").create();
+        TestAnalysis analysis = createTestAnalysis();
+        TokenFilterFactory tokenFilter = analysis.tokenFilter.get("baseform");
+        Tokenizer tokenizer = analysis.tokenizer.get("standard").create();
         tokenizer.setReader(new StringReader(source));
         assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);
     }
@@ -87,17 +79,32 @@ public class BaseformTokenFilterTests extends Assert {
                 "wurde",
                 "werden",
                 "zum",
-                "zum",
-                "tollen",
                 "tollen",
                 "gemacht",
                 "machen"
         };
-        AnalysisService analysisService = MapperTestUtils.analysisService();
-        TokenFilterFactory tokenFilter = analysisService.tokenFilter("baseform");
-        Tokenizer tokenizer = analysisService.tokenizer("standard").create();
+        TestAnalysis analysis = createTestAnalysis();
+        TokenFilterFactory tokenFilter = analysis.tokenFilter.get("baseform");
+        Tokenizer tokenizer = analysis.tokenizer.get("standard").create();
         tokenizer.setReader(new StringReader(source));
         assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);
+    }
+    
+    private TestAnalysis createTestAnalysis() throws IOException {
+        Settings settings = Settings.builder()
+                .put(IndexMetaData.SETTING_VERSION_CREATED, Version.CURRENT)
+                .build();
+        IndexMetaData indexMetaData = IndexMetaData.builder("test")
+                .settings(settings)
+                .numberOfShards(1)
+                .numberOfReplicas(1)
+                .build();
+        Settings nodeSettings = Settings.builder()
+        			.put(AnalysisBaseformPlugin.SETTING_MAX_CACHE_SIZE.getKey(), 131072)
+                .put("path.home", System.getProperty("path.home", "/tmp"))
+                .build();
+        TestAnalysis analysis = createTestAnalysis(new IndexSettings(indexMetaData, nodeSettings), nodeSettings, new AnalysisBaseformPlugin(nodeSettings));
+        return analysis;
     }
 
     private void assertSimpleTSOutput(TokenStream stream, String[] expected) throws IOException {

@@ -1,13 +1,13 @@
 package org.xbib.elasticsearch.index.analysis;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.xbib.elasticsearch.common.fsa.Dictionary;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.CharacterCodingException;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.xbib.elasticsearch.common.fsa.Dictionary;
 
 public class DictionaryTests extends Assert {
 

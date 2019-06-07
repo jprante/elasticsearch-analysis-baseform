@@ -1,34 +1,28 @@
 package org.xbib.elasticsearch.index.analysis;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-
+import org.elasticsearch.Version;
+import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
+import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.analysis.AnalysisService;
+import org.elasticsearch.index.IndexSettings;
 import org.elasticsearch.index.analysis.NamedAnalyzer;
-
+import org.elasticsearch.test.ESTestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xbib.elasticsearch.plugin.analysis.baseform.AnalysisBaseformPlugin;
 
-import static org.elasticsearch.common.io.Streams.copyToString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-public class GermanBaseformTokenFilterTests {
+public class GermanBaseformTokenFilterTests extends ESTestCase {
 
     static NamedAnalyzer analyzer;
 
     @BeforeClass
     public static void create() throws IOException {
-        Settings settings = Settings.settingsBuilder()
-                .loadFromSource(copyToStringFromClasspath(("/org/xbib/elasticsearch/index/analysis/baseform_de.json")))
-                .build();
-        AnalysisService analysisService = MapperTestUtils.analysisService(settings);
-        analyzer = analysisService.analyzer("baseform");
+        TestAnalysis analysis = createTestAnalysis("org/xbib/elasticsearch/index/analysis/baseform_de.json");
+        analyzer = analysis.indexAnalyzers.get("baseform");
     }
 
     @Test
@@ -87,8 +81,22 @@ public class GermanBaseformTokenFilterTests {
         assertSimpleTSOutput(analyzer.tokenStream("content", source), expected);
     }
 
-    private static String copyToStringFromClasspath(String path) throws IOException {
-        return copyToString(new InputStreamReader(EnglishBaseformTokenFilterTests.class.getResourceAsStream(path), "UTF-8"));
+    private static TestAnalysis createTestAnalysis(String resource) throws IOException {
+        Settings settings = Settings.builder()
+                .put(IndexMetaData.SETTING_VERSION_CREATED, Version.CURRENT)
+                .loadFromStream(resource, ClassLoader.getSystemClassLoader().getResourceAsStream(resource), false)
+                .build();
+        IndexMetaData indexMetaData = IndexMetaData.builder("test")
+                .settings(settings)
+                .numberOfShards(1)
+                .numberOfReplicas(1)
+                .build();
+        Settings nodeSettings = Settings.builder()
+        			.put(AnalysisBaseformPlugin.SETTING_MAX_CACHE_SIZE.getKey(), 131072)
+                .put("path.home", System.getProperty("path.home", "/tmp"))
+                .build();
+        TestAnalysis analysis = createTestAnalysis(new IndexSettings(indexMetaData, nodeSettings), nodeSettings, new AnalysisBaseformPlugin(nodeSettings), new CommonAnalysisPlugin());
+        return analysis;
     }
 
     private void assertSimpleTSOutput(TokenStream stream, String[] expected) throws IOException {
